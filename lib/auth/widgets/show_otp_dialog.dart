@@ -313,11 +313,13 @@ class _OtpVerifyDialogState extends State<OtpVerifyDialog> {
                   ),
                   SizedBox(width: 12.w),
                   TextButton(
-                    onPressed: _expired ? () {
-                      final bloc = context.read<ForgotPasswordBloc>();
-                      bloc.add(ForgotPasswordRequestEvent(widget.email));
-                      // _generateAndStart();
-                    }: null,
+                    onPressed: _expired
+                        ? () {
+                            final bloc = context.read<ForgotPasswordBloc>();
+                            bloc.add(ForgotPasswordRequestEvent(widget.email));
+                            _generateAndStart(); // Reset timer and refocus
+                          }
+                        : null,
                     child: Text(
                       "Qayta yuborish",
                       style: TextStyle(

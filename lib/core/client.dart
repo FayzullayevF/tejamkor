@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:tejamkor/categories/data/models/category_model.dart';
+import 'package:tejamkor/categories/data/models/currency_model.dart';
 import 'package:tejamkor/core/data/models/auth/auth_model.dart';
 import 'package:tejamkor/core/data/models/auth/change_password.dart';
 import 'package:tejamkor/core/data/models/auth/forgot_password_request.dart';
@@ -125,9 +127,31 @@ class ApiClient {
       data: model.toJson(),
       options: Options(extra: {"requiresAuth": false}),
     );
-    if(response.statusCode != 200){
+    if (response.statusCode != 200) {
       throw Exception("Parol o'zgarmadi");
     }
   }
 
+  Future<List<CategoryModel>> getCategories() async {
+    final response = await dio.get('/api/categories/defaults/');
+
+    if (response.data is List) {
+      final list = (response.data as List)
+          .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return list.take(20).toList();
+    } else {
+      throw Exception('Kategoriyalarni yuklashda xatolik yuz berdi');
+    }
+  }
+
+  Future<UserCurrencyResponse> getUserCurrency() async {
+    final response = await dio.get('/api/transactions/user-currency/');
+
+    if (response.statusCode == 200 && response.data != null) {
+      return UserCurrencyResponse.fromJson(response.data as Map<String, dynamic>);
+    } else {
+      throw Exception('Valyutani yuklashda xatolik yuz berdi');
+    }
+  }
 }

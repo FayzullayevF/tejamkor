@@ -7,10 +7,22 @@ import 'package:tejamkor/auth/blocs/sign_up/sign_up_bloc.dart';
 import 'package:tejamkor/auth/pages/forgot_password_view.dart';
 import 'package:tejamkor/core/client.dart';
 import 'package:tejamkor/core/data/repos/auth_repository.dart';
+import 'package:tejamkor/categories/data/repositories/category_repository.dart';
+import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
+import 'package:tejamkor/categories/data/repositories/currency_repository.dart';
+import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
 
 List<SingleChildWidget> providers = [
   Provider(create: (context) => ApiClient()),
   Provider(create: (context) => AuthRepository(client: context.read())),
+  Provider(create: (context) => CategoryRepository(apiClient: context.read())),
+  Provider(create: (context) => CurrencyRepository(context.read<ApiClient>())),
+  BlocProvider(
+    create: (context) => CategoryBloc(repo: context.read<CategoryRepository>()),
+  ),
+  BlocProvider(
+    create: (context) => CurrencyBloc(context.read<CurrencyRepository>()),
+  ),
   BlocProvider(
     create: (context) => SignUpBloc(repo: context.read<AuthRepository>()),
   ),

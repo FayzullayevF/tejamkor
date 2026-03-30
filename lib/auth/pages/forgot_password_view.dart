@@ -72,18 +72,10 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
-                height: MediaQuery.of(context).size.height * 0.65,
+                height: MediaQuery.of(context).size.height * 0.6,
                 decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.white,
-                      Colors.white,
-                    ],
-                    stops: [0.0, 0.3, 1.0],
-                  ),
+                  color: Colors.white,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
                 ),
               ),
             ),

@@ -229,6 +229,19 @@ class _AuthTextFieldState extends State<AuthTextField> {
             vertical: 22,
           ),
 
+          errorStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+            color: Color(0xFFEF4444),
+            height: 1,
+          ),
+          helperText: ' ',
+          helperStyle: const TextStyle(
+            fontSize: 12,
+            height: 1,
+          ),
+          errorMaxLines: 2,
+
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
@@ -241,6 +254,22 @@ class _AuthTextFieldState extends State<AuthTextField> {
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
               color: Color(0xFF2BB9B1),
+              width: 1.4,
+            ),
+          ),
+          
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: Color(0xFFEF4444),
+              width: 1,
+            ),
+          ),
+          
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(16),
+            borderSide: const BorderSide(
+              color: Color(0xFFEF4444),
               width: 1.4,
             ),
           ),

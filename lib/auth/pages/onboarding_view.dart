@@ -16,24 +16,25 @@ class OnboardingView extends StatelessWidget {
           Container(
             width: double.infinity,
             height: double.infinity,
-            decoration:  BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [AppColors.cyanAccent.withOpacity(0.7), AppColors.darkNavy],
+                colors: [AppColors.cyanAccent, AppColors.darkNavy],
+                stops: const [0.0, 0.6],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
               ),
             ),
           ),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
-              height: 700.h,
+              height: MediaQuery.of(context).size.height * 0.5,
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.white],
-                  stops: [0.0, 1.0],
+                  colors: [Colors.transparent, Colors.white, Colors.white],
+                  stops: [0.0, 0.4, 1.0],
                 ),
               ),
             ),
@@ -62,7 +63,7 @@ class OnboardingView extends StatelessWidget {
                         weight: 380.w,
                         title: "Boshlash",
                         voidCallback: () {
-                          context.go(Routers.login);
+                          context.push(Routers.login);
                         },
                       ),
                     ),

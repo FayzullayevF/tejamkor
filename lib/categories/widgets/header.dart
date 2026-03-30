@@ -56,35 +56,34 @@ class Header extends StatelessWidget {
             ),
             SizedBox(width: 7.w),
             Expanded(
-              child: Row(
-                children: List.generate(3, (index) {
-                  final isActive = index <= currentPage;
-                  return Expanded(
-                    child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 4),
-                      height: 11.h,
-                      decoration: BoxDecoration(
-                        color: isActive ? null : Colors.white,
-                        gradient: isActive
-                            ? LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  AppColors.cyanAccent,
-                                  AppColors.darkNavy,
-                                ],
-                              )
-                            : null,
-                        borderRadius: BorderRadius.circular(35),
+              child: Container(
+                height: 11.h,
+                decoration: BoxDecoration(
+                  color: const Color(0xffF3F3F3),
+                  borderRadius: BorderRadius.circular(35),
+                ),
+                alignment: Alignment.centerLeft,
+                child: FractionallySizedBox(
+                  widthFactor: (currentPage + 1) / 3,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        colors: [
+                          AppColors.cyanAccent,
+                          AppColors.darkNavy,
+                        ],
                       ),
+                      borderRadius: BorderRadius.circular(35),
                     ),
-                  );
-                }),
+                  ),
+                ),
               ),
             ),
             SizedBox(width: 7.w),
             Text(
-              "3 ",
+              "3",
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 fontSize: 24,

@@ -6,7 +6,8 @@ class AppButton extends StatelessWidget {
     super.key,
     required this.height,
     required this.weight,
-    required this.title, required this.voidCallback,
+    required this.title,
+    required this.voidCallback,
   });
 
   final double height, weight;
@@ -35,7 +36,7 @@ class AppButton extends StatelessWidget {
             ),
           ],
         ),
-        child:  Center(
+        child: Center(
           child: Text(
             title,
             style: TextStyle(

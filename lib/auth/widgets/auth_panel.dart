@@ -21,14 +21,14 @@ class AuthPanel extends StatelessWidget {
     return Stack(
       children: [
         Container(
-          decoration:  BoxDecoration(
+          width: MediaQuery.of(context).size.width,
+          height: MediaQuery.of(context).size.height,
+          decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                AppColors.cyanAccent,
-                AppColors.darkNavy,
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.centerRight,
+              colors: [AppColors.cyanAccent, AppColors.darkNavy],
+              stops: [0.0, 0.6],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
           ),
         ),
@@ -51,10 +51,10 @@ class AuthPanel extends StatelessWidget {
                       fontSize: 36,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0,
-                      height: 1
+                      height: 1,
                     ),
                   ),
-                  if(isLogin)...[
+                  if (isLogin) ...[
                     SizedBox(height: 15.h),
                     Text(
                       "Pullaringizni biz orqali tejang!",
@@ -62,13 +62,11 @@ class AuthPanel extends StatelessWidget {
                         color: Color(0xffDCDCDC),
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
-
                       ),
                     ),
-                  ]
+                  ],
                 ],
               ),
-
             ),
           ),
         ),
@@ -77,11 +75,11 @@ class AuthPanel extends StatelessWidget {
           child: Transform.translate(
             offset: Offset(0, isLogin ? 30 : 0),
             child: FractionallySizedBox(
-              heightFactor: 0.75,
+              heightFactor: isLogin ? 0.70 : 0.82,
               widthFactor: 1,
               child: Container(
-                padding:  EdgeInsets.all(18),
-                decoration:  BoxDecoration(
+                padding: EdgeInsets.all(18),
+                decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
                 ),
@@ -90,7 +88,7 @@ class AuthPanel extends StatelessWidget {
                     AuthSegmented(isLogin: isLogin, onChanged: onChanged),
                     Expanded(
                       child: AnimatedSwitcher(
-                        duration:  Duration(milliseconds: 160),
+                        duration: Duration(milliseconds: 160),
                         child: child,
                       ),
                     ),
@@ -100,7 +98,6 @@ class AuthPanel extends StatelessWidget {
             ),
           ),
         ),
-
       ],
     );
   }

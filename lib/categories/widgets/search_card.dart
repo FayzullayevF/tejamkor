@@ -39,29 +39,35 @@ class _SearchCardState extends State<SearchCard> {
               color: Color(0xff7C7777),
             ),
 
-            /// 🔥 SEARCH ICON NI O‘NGROQ QILISH
-            prefixIcon: Padding(
-              padding: EdgeInsets.only(left: 16.w, right: 8.w),
-              child: Icon(Icons.search, color: Colors.grey.shade600, size: 22),
+            prefixIcon: Container(
+              padding: EdgeInsets.only(left: 24.w, right: 14.w),
+              child: SvgPicture.asset(
+                'assets/icons/search.svg',
+                width: 24.w,
+                height: 24.w,
+                colorFilter: const ColorFilter.mode(Color(0xff7C7777), BlendMode.srcIn),
+              ),
+            ),
+            prefixIconConstraints: BoxConstraints(
+              minWidth: 62.w, // left(24) + width(24) + right(14) = 62
+              minHeight: 24.w,
             ),
 
             suffixIcon: _searchQuery.isNotEmpty
-                ? GestureDetector(
-                    onTap: () {
+                ? IconButton(
+                    icon: Icon(Icons.close, color: const Color(0xff7C7777), size: 24.w),
+                    onPressed: () {
                       setState(() {
                         _searchController.clear();
                         _searchQuery = "";
                       });
                     },
-                    child: SvgPicture.asset('assets/icons/search.svg'),
                   )
                 : null,
-
             border: InputBorder.none,
-
             contentPadding: EdgeInsets.symmetric(
               horizontal: 0,
-              vertical: 22.h, // heightga moslashtirdik
+              vertical: 22.h,
             ),
           ),
         ),

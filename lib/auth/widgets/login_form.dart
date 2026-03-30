@@ -107,6 +107,7 @@ class _LoginFormBodyState extends State<_LoginFormBody> {
             const SnackBar(content: Text("Login success")),
           );
           widget.onSuccess();
+          context.go(Routers.categories);
         }
 
         if (state.status == LoginStatus.error) {

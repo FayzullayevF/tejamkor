@@ -7,5 +7,6 @@ class Routers {
   static const forgotPassword = "/forgotPassword";
   static const enterPassword = "/enterPassword";
   static const categories = "/categories";
-
+  static const expense = "/expense";
+  static const income = "/income";
 }

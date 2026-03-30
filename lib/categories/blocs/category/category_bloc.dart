@@ -1,0 +1,39 @@
+import 'package:bloc/bloc.dart';
+import 'package:tejamkor/categories/blocs/category/category_event.dart';
+import 'package:tejamkor/categories/blocs/category/category_state.dart';
+import 'package:tejamkor/categories/data/repositories/category_repository.dart';
+
+class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
+  final CategoryRepository _repo;
+
+  CategoryBloc({required CategoryRepository repo})
+      : _repo = repo,
+        super(CategoryState.initial()) {
+    on<CategoriesFetched>(_onFetched);
+  }
+
+  Future<void> _onFetched(
+    CategoriesFetched event,
+    Emitter<CategoryState> emit,
+  ) async {
+    print("Categories fetch event keldi");
+    emit(state.copyWith(status: CategoryStatus.loading));
+    try {
+      final categories = await _repo.getCategories();
+      print("Categories fetch success: ${categories.length} ta kategoriya keldi");
+      emit(state.copyWith(
+        status: CategoryStatus.success,
+        categories: categories,
+      ));
+    } catch (e, s) {
+      print("Categories fetch error: $e");
+      print("STACKTRACE: $s");
+      emit(
+        state.copyWith(
+          status: CategoryStatus.error,
+          errorMessage: e.toString(),
+        ),
+      );
+    }
+  }
+}

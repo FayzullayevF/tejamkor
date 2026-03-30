@@ -20,18 +20,12 @@ class RegisterForm extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _RegisterFormBody(
-      onSubmit: onSubmit,
-      onSuccess: onSuccess,
-    );
+    return _RegisterFormBody(onSubmit: onSubmit, onSuccess: onSuccess);
   }
 }
 
 class _RegisterFormBody extends StatefulWidget {
-  const _RegisterFormBody({
-    required this.onSubmit,
-    required this.onSuccess,
-  });
+  const _RegisterFormBody({required this.onSubmit, required this.onSuccess});
 
   final VoidCallback onSubmit;
   final VoidCallback onSuccess;
@@ -65,9 +59,9 @@ class _RegisterFormBodyState extends State<_RegisterFormBody> {
 
       if (bloc.passwordController.text.trim() !=
           bloc.passwordConfirmController.text.trim()) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Parollar mos emas")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Parollar mos emas")));
         return;
       }
 
@@ -92,9 +86,7 @@ class _RegisterFormBodyState extends State<_RegisterFormBody> {
 
         if (state.status == SignUpStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? "Xatolik yuz berdi"),
-            ),
+            SnackBar(content: Text(state.errorMessage ?? "Xatolik yuz berdi")),
           );
         }
       },
@@ -109,34 +101,34 @@ class _RegisterFormBodyState extends State<_RegisterFormBody> {
                 type: AuthFieldType.name,
                 labelText: "To'liq ismingiz",
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               AuthTextField(
                 controller: bloc.emailController,
                 type: AuthFieldType.email,
                 labelText: "Email pochtangiz",
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               AuthTextField(
                 controller: phoneController,
                 type: AuthFieldType.phone,
                 labelText: "Telefon nomeringiz",
                 hintText: "+998-***-**-**",
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               AuthTextField(
                 controller: bloc.passwordController,
                 type: AuthFieldType.password,
                 labelText: "Parol",
                 hintText: "Kamida 8 ta belgi",
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
               AuthTextField(
                 controller: bloc.passwordConfirmController,
                 type: AuthFieldType.password,
                 labelText: "Parolingizni tasdiqlang",
                 hintText: "Parolni qayta kiriting",
               ),
-              SizedBox(height: 16.h),
+              SizedBox(height: 30.h),
               AppButton(
                 height: 73.h,
                 weight: 380.w,

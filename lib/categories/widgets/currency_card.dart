@@ -9,19 +9,26 @@ class CurrencyCard extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.flagSvg,
-    required this.borderColor,
-    required this.backgroundColor,
+    this.activeColor,
+    this.activeBgColor,
     this.isSelected = false,
     this.onTap,
   });
 
   final String title, subtitle, flagSvg;
-  final Color borderColor, backgroundColor;
   final bool isSelected;
   final VoidCallback? onTap;
+  final Color? activeColor;
+  final Color? activeBgColor;
 
   @override
   Widget build(BuildContext context) {
+    final Color mainActive = activeColor ?? const Color(0xff0DC871);
+    final Color mainBgActive = activeBgColor ?? const Color(0xffF0FDF4);
+    
+    final Color bgColor = isSelected ? mainBgActive : const Color(0xffF3F3F3);
+    final Color bColor = isSelected ? mainActive : Colors.transparent;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -29,9 +36,9 @@ class CurrencyCard extends StatelessWidget {
         height: 73.h,
         padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
         decoration: BoxDecoration(
-          color: backgroundColor,
+          color: bgColor,
           borderRadius: BorderRadius.circular(47),
-          border: Border.all(color: borderColor, width: 1),
+          border: Border.all(color: bColor, width: 1.5),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -71,13 +78,17 @@ class CurrencyCard extends StatelessWidget {
               ],
             ),
             Transform.scale(
-              scale: 1.1,
+              scale: 1.2,
               child: Checkbox(
                 value: isSelected,
-                onChanged: (_)=> onTap?.call(),
+                onChanged: (_) => onTap?.call(),
                 shape: CircleBorder(),
-                activeColor: borderColor,
+                activeColor: mainActive,
                 checkColor: Colors.white,
+                side: BorderSide(
+                  color: isSelected ? mainActive : const Color(0xffB5B5B5), 
+                  width: 1,
+                ),
                 materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
               ),
             ),

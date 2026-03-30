@@ -5,7 +5,16 @@ import 'package:go_router/go_router.dart';
 import 'package:tejamkor/core/routing/router.dart';
 
 class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const AuthAppBar({super.key});
+  const AuthAppBar({
+    super.key,
+    this.voidCallback,
+    this.route,
+    this.isPush = false,
+  });
+
+  final VoidCallback? voidCallback;
+  final String? route;
+  final bool isPush;
 
   static const backArrow =
       ''' <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -30,7 +39,21 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
           child: InkWell(
             borderRadius: BorderRadius.circular(999),
             onTap: () {
-             context.go(Routers.login);
+              if (voidCallback != null) {
+                voidCallback!();
+              } else if (route != null) {
+                if (isPush) {
+                  context.push(route!);
+                } else {
+                  context.go(route!);
+                }
+              } else {
+                if (context.canPop()) {
+                  context.pop();
+                } else {
+                  context.go(Routers.login);
+                }
+              }
             },
             child: Container(
               height: 24.h,
