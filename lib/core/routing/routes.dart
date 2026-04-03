@@ -13,9 +13,11 @@ import 'package:tejamkor/categories/pages/income_view.dart';
 import 'package:tejamkor/categories/pages/all_categories_view.dart';
 import 'package:tejamkor/home/pages/settings_view.dart';
 import 'package:tejamkor/home/pages/add_transaction_view.dart';
+import 'package:tejamkor/monthly_limit/pages/monthly_limit_view.dart';
+import 'package:tejamkor/statistics/pages/statistics_view.dart';
 
 final router = GoRouter(
-  initialLocation: Routers.addTransaction,
+  initialLocation: Routers.statistics,
   routes: [
     GoRoute(path: Routers.onboarding, builder: (_, _) => OnboardingView()),
     GoRoute(path: Routers.login, builder: (_, _) => LoginView()),
@@ -45,6 +47,14 @@ final router = GoRouter(
     GoRoute(
       path: Routers.addTransaction,
       builder: (_, _) => AddTransactionView(),
+    ),
+    GoRoute(
+      path: Routers.monthlyLimit,
+      builder: (_, _) => MonthlyLimitView(),
+    ),
+    GoRoute(
+      path: Routers.statistics,
+      builder: (_, _) => StatisticsView(),
     ),
   ],
 );

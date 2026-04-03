@@ -11,4 +11,8 @@ class Routers {
   static const income = "/income";
   static const settings = "/settings";
   static const addTransaction = "/addTransaction";
+  static const monthlyLimit = "/monthlyLimit";
+  static const statistics = "/statistics";
+
+
 }
