@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_event.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_state.dart';
 import 'package:tejamkor/core/data/repos/auth_repository.dart';
+import 'package:tejamkor/core/utils/error_parser.dart';
 
 class ForgotPasswordBloc
     extends Bloc<ForgotPasswordEvent, ForgotPasswordState> {
@@ -41,7 +42,7 @@ class ForgotPasswordBloc
       print("Forgot password request error $e");
       print("STACKTRACE: $s");
       emit(
-        state.copyWith(status: ForgotPasswordStatus.error, error: e.toString()),
+        state.copyWith(status: ForgotPasswordStatus.error, error: ErrorParser.parse(e)),
       );
     }
   }
@@ -68,7 +69,7 @@ class ForgotPasswordBloc
       print("Forgot password verify error $e");
       print("STACKTRACE: $s");
       emit(
-        state.copyWith(status: ForgotPasswordStatus.error, error: e.toString()),
+        state.copyWith(status: ForgotPasswordStatus.error, error: ErrorParser.parse(e)),
       );
     }
   }
@@ -92,7 +93,7 @@ class ForgotPasswordBloc
       print("Forgot password reset error $e");
       print("STACKTRACE: $s");
       emit(
-        state.copyWith(status: ForgotPasswordStatus.error, error: e.toString()),
+        state.copyWith(status: ForgotPasswordStatus.error, error: ErrorParser.parse(e)),
       );
     }
   }

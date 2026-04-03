@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:tejamkor/core/routing/router.dart';
 
 class HomeHeader extends StatelessWidget {
   const HomeHeader({super.key});
@@ -12,7 +14,16 @@ class HomeHeader extends StatelessWidget {
         CircleAvatar(
           backgroundColor: Colors.white.withOpacity(0.15),
           radius: 20.r,
-          child: Icon(Icons.settings_outlined, color: Colors.white, size: 20.w),
+          child: GestureDetector(
+            onTap: () {
+              context.push(Routers.settings);
+            },
+            child: Icon(
+              Icons.settings_outlined,
+              color: Colors.white,
+              size: 20.w,
+            ),
+          ),
         ),
         Text(
           "Hayrli kun, Daler",

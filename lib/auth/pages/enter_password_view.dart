@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_bloc.dart';
-import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_event.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_state.dart';
 
 import '../../core/utils/app_colors.dart';
 import '../../widgets/app_button.dart';
 import '../widgets/auth_app_bar.dart';
 import '../widgets/auth_text_field.dart';
+import '../widgets/show_error_dialog.dart';
 
 class EnterPasswordView extends StatelessWidget {
   EnterPasswordView({super.key});
@@ -26,9 +26,7 @@ class EnterPasswordView extends StatelessWidget {
           ).showSnackBar(SnackBar(content: Text("Password changed")));
         }
         if (state.status == ForgotPasswordStatus.error) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Password changed error")));
+          showErrorDialog(context, state.error ?? "Xatolik yuz berdi");
         }
       },
       child: Scaffold(
@@ -59,7 +57,6 @@ class EnterPasswordView extends StatelessWidget {
                 ),
               ),
             ),
-            AuthAppBar(),
             SafeArea(
               child: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -127,6 +124,7 @@ class EnterPasswordView extends StatelessWidget {
                 ),
               ),
             ),
+            const AuthAppBar(),
           ],
         ),
       ),

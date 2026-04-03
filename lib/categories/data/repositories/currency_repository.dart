@@ -9,4 +9,8 @@ class CurrencyRepository {
   Future<UserCurrencyResponse> getUserCurrency() async {
     return await _apiClient.getUserCurrency();
   }
+
+  Future<void> updateUserCurrency(int currencyId) async {
+    await _apiClient.updateUserCurrency(currencyId);
+  }
 }

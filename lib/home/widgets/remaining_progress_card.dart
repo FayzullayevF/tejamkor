@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tejamkor/core/utils/app_colors.dart';
 
 class RemainingProgressCard extends StatelessWidget {
   const RemainingProgressCard({super.key});
@@ -7,7 +9,7 @@ class RemainingProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.w),
+      height: 300.h,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24.r),
@@ -19,146 +21,191 @@ class RemainingProgressCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      // Qutidagi xatolikni oldini olish uchun (Spacer sababli pastki bo'shliq yetmay qolishi) ->
+      // Endi ichki elementlarni to'g'ridan-to'g'ri Stack orqali boshqaramiz
+      child: Stack(
+        clipBehavior: Clip.none,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(
-                Icons.calendar_month_outlined,
-                color: Colors.black54,
-                size: 28.w,
-              ),
-              SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          // 1. Yuqori qismdagi ma'lumotlar
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
+            child: Column(
+              children: [
+                Center(
+                  child: Row(
+                    children: [
+                      SvgPicture.asset(
+                        'assets/icons/home_calendar.svg',
+                        width: 33.w,
+                        height: 33.w,
+                      ),
+                      SizedBox(width: 15.w),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Pulim qachongacha yetadi?",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              "Shu zaylda davom etsangiz:",
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w400,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 20.h),
+                const Text(
+                  "20 kunga yetadi",
+                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
+                ),
+                SizedBox(height: 12.h),
+                Stack(
                   children: [
-                    Text(
-                      "Pulim qachongacha yetadi?",
-                      style: TextStyle(
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      height: 8.h,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(4.r),
                       ),
                     ),
-                    Text(
-                      "Shu zaylda davom etsangiz:",
-                      style: TextStyle(
-                        fontSize: 11.sp,
-                        color: Colors.grey.shade600,
+                    FractionallySizedBox(
+                      widthFactor: 0.6,
+                      child: Container(
+                        height: 8.h,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                            colors: [AppColors.cyanAccent, AppColors.darkNavy],
+                          ),
+                          borderRadius: BorderRadius.circular(4.r),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20.h),
-          Text(
-            "20 kunga yetadi",
-            style: TextStyle(fontSize: 22.sp, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 12.h),
-          // Progress bar
-          Stack(
-            children: [
-              Container(
-                height: 8.h,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(4.r),
-                ),
-              ),
-              FractionallySizedBox(
-                widthFactor: 0.6, // 60% full approx
-                child: Container(
-                  height: 8.h,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF0ED2C9), Color(0xFF046D66)],
+                SizedBox(height: 8.h),
+                RichText(
+                  text: const TextSpan(
+                    text: "Bugun yana ",
+                    style: TextStyle(
+                      color: Colors.black54,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
                     ),
-                    borderRadius: BorderRadius.circular(4.r),
+                    children: [
+                      TextSpan(
+                        text: "40 000 so'm",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 16,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      TextSpan(text: " sarflash mumkin!"),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8.h),
-          RichText(
-            text: TextSpan(
-              text: "Bugun yana ",
-              style: TextStyle(color: Colors.black54, fontSize: 11.sp),
-              children: [
-                TextSpan(
-                  text: "40 000 so'm",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11.sp,
-                  ),
-                ),
-                TextSpan(text: " sarflash mumkin!"),
               ],
             ),
           ),
-          SizedBox(height: 20.h),
-          // Score wrapper
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF0DCB7F), Color(0xFF034128)],
-                  ),
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
-                child: Text(
-                  "Tejamkor Score",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 13.sp,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Positioned(
-                right: 0,
-                top: -10,
-                bottom: -10,
-                child: Container(
-                  width: 70.w,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: const Color(0xff0ED2C9),
-                    shape: BoxShape.circle,
-                    gradient: const RadialGradient(
-                      colors: [Color(0xFF23E4C9), Color(0xFF034128)],
-                      radius: 0.8,
+
+          // 2. Tejamkor Score va Dumaloq qismi aynan pastki qismda ushlab turiladi (bottom: 0)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Yashil chiziq
+                Container(
+                  width: double.infinity,
+                  height: 56.h,
+                  margin: EdgeInsets.only(right: 20.w),
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  alignment: Alignment.centerLeft,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Color(0xFF0FBC5F), Color(0xFF0B0D17)],
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      stops: [0.1, 1],
                     ),
-                    border: Border.all(color: Colors.white, width: 4),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 8,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(28),
+                      bottomLeft: Radius.circular(24),
+                    ),
                   ),
-                  child: Text(
-                    "75",
+                  child: const Text(
+                    "Tejamkor Score",
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 22.sp,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w400,
                     ),
                   ),
                 ),
-              ),
-            ],
+                // Dumaloq 75 soni
+                Positioned(
+                  right: -10.w,
+                  top: -27.h,
+                  child: Container(
+                    width: 110.h,
+                    height: 110.h,
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          Color.fromARGB(255, 15, 17, 28),
+                          Color(0xFF0FBC5F),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                    child: Container(
+                      width: 90.h,
+                      height: 90.h,
+                      alignment: Alignment.center,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF0FBC5F), Color(0xFF0B0D17)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                      child: const Text(
+                        "75",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 42,
+                          fontWeight: FontWeight.w800,
+                          height: 1.0,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
+import 'package:tejamkor/core/routing/router.dart';
 import 'package:tejamkor/core/utils/app_colors.dart';
 import 'widgets/home_header.dart';
 import 'widgets/home_balance.dart';
@@ -9,6 +11,7 @@ import 'widgets/remaining_progress_card.dart';
 import 'widgets/chart_card.dart';
 import 'widgets/accounts_card.dart';
 import 'widgets/currency_rates_card.dart';
+import 'pages/settings_view.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -22,8 +25,10 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xffF3F3F3),
+      backgroundColor: isDark ? Colors.black : const Color(0xffF3F3F3),
       extendBody: true,
       body: Stack(
         children: [
@@ -45,28 +50,14 @@ class _HomeViewState extends State<HomeView> {
 
           SafeArea(
             bottom: false,
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  HomeHeader(),
-                  SizedBox(height: 16.h),
-                  HomeBalance(),
-                  SizedBox(height: 24.h),
-                  IncomeExpenseRow(),
-                  SizedBox(height: 16.h),
-                  RemainingProgressCard(),
-                  SizedBox(height: 24.h),
-                  ChartCard(),
-                  SizedBox(height: 24.h),
-                  AccountsCard(),
-                  SizedBox(height: 24.h),
-                  CurrencyRatesCard(),
-                  SizedBox(height: 120.h), // nav bar uchun joy
-                ],
-              ),
+            child: IndexedStack(
+              index: _currentIndex,
+              children: [
+                _buildHomeDashboard(),
+                const Center(child: Text("Tab 1")),
+                const Center(child: Text("Tab 2")),
+                const SettingsView(),
+              ],
             ),
           ),
 
@@ -77,7 +68,35 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
+  Widget _buildHomeDashboard() {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          HomeHeader(),
+          SizedBox(height: 16.h),
+          HomeBalance(),
+          SizedBox(height: 24.h),
+          IncomeExpenseRow(),
+          SizedBox(height: 16.h),
+          RemainingProgressCard(),
+          SizedBox(height: 35.h),
+          ChartCard(),
+          SizedBox(height: 24.h),
+          AccountsCard(),
+          SizedBox(height: 24.h),
+          CurrencyRatesCard(),
+          SizedBox(height: 120.h), // nav bar uchun joy
+        ],
+      ),
+    );
+  }
+
   Widget _buildCustomNavBar() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Positioned(
       bottom: 36.h,
       left: 27.w,
@@ -90,7 +109,7 @@ class _HomeViewState extends State<HomeView> {
             height: 68.h,
             padding: EdgeInsets.symmetric(horizontal: 10.w),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
               borderRadius: BorderRadius.circular(35.r),
               boxShadow: [
                 BoxShadow(
@@ -110,17 +129,14 @@ class _HomeViewState extends State<HomeView> {
               children: [
                 _buildNavItem(0, 'assets/icons/house.svg'),
                 _buildNavItem(1, 'assets/icons/time.svg'),
-                SizedBox(width: 70.w), // O'rtadagi bo'shliq
+                SizedBox(width: 70.w),
                 _buildNavItem(2, 'assets/icons/shield.svg'),
                 _buildNavItem(3, 'assets/icons/menu.svg'),
               ],
             ),
           ),
-
-          // Plus button (Kattaroq qilib o'rtada tursin)
           Container(
-            height:
-                80.w, // Kattaroq qildim, shunda tepa va pastga ko'proq chiqadi
+            height: 80.w,
             width: 80.w,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
@@ -138,7 +154,9 @@ class _HomeViewState extends State<HomeView> {
               ],
             ),
             child: FloatingActionButton(
-              onPressed: () {},
+              onPressed: () {
+                context.push(Routers.addTransaction);
+              },
               backgroundColor: Colors.transparent,
               elevation: 0,
               focusElevation: 0,
@@ -154,6 +172,8 @@ class _HomeViewState extends State<HomeView> {
 
   Widget _buildNavItem(int index, String assetPath) {
     final isSelected = _currentIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -163,7 +183,9 @@ class _HomeViewState extends State<HomeView> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFF3F3F3) : Colors.transparent,
+          color: isSelected
+              ? (isDark ? Colors.white24 : const Color(0xFFF3F3F3))
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(24.r),
         ),
         child: SvgPicture.asset(
@@ -171,7 +193,9 @@ class _HomeViewState extends State<HomeView> {
           width: 24.w,
           height: 24.w,
           colorFilter: ColorFilter.mode(
-            isSelected ? Colors.black : const Color(0xFFACACAC),
+            isSelected
+                ? (isDark ? Colors.white : Colors.black)
+                : const Color(0xFFACACAC),
             BlendMode.srcIn,
           ),
         ),

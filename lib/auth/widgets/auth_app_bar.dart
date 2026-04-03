@@ -10,11 +10,13 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.voidCallback,
     this.route,
     this.isPush = false,
+    this.backArrowColor = Colors.white,
   });
 
   final VoidCallback? voidCallback;
   final String? route;
   final bool isPush;
+  final Color backArrowColor;
 
   static const backArrow =
       ''' <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -22,19 +24,19 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
 </svg>
 ''';
 
-
   @override
   Size get preferredSize => Size.fromHeight(70);
 
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.transparent,
+      backgroundColor: Colors.transparent,
       elevation: 0,
       leadingWidth: 60,
       // toolbarHeight: 56,
       leading: Padding(
-        padding: EdgeInsets.only(left:12.w),
+        padding: EdgeInsets.only(left: 12.w),
         child: Center(
           child: InkWell(
             borderRadius: BorderRadius.circular(999),
@@ -61,7 +63,7 @@ class AuthAppBar extends StatelessWidget implements PreferredSizeWidget {
               alignment: Alignment.center,
               child: SvgPicture.asset(
                 "assets/icons/back-arrow.svg",
-                color: Colors.black,
+                color: backArrowColor,
                 height: 18.h,
                 width: 18.w,
                 fit: BoxFit.contain,

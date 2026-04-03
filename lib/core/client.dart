@@ -64,10 +64,14 @@ class ApiClient {
     return RefreshResponseModel.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<bool> logout({required String refreshToken}) async {
+  Future<bool> logout({required String refreshToken, String? email}) async {
+    final data = <String, dynamic>{'refresh': refreshToken};
+    if (email != null) {
+      data['email'] = email;
+    }
     final response = await dio.post(
       _logoutPath,
-      data: {'refresh': refreshToken},
+      data: data,
       options: Options(extra: {'requiresAuth': false}),
     );
 
@@ -152,6 +156,16 @@ class ApiClient {
       return UserCurrencyResponse.fromJson(response.data as Map<String, dynamic>);
     } else {
       throw Exception('Valyutani yuklashda xatolik yuz berdi');
+    }
+  }
+
+  Future<void> updateUserCurrency(int currencyId) async {
+    final response = await dio.patch(
+      '/api/transactions/user-currency/',
+      data: {'currency': currencyId},
+    );
+    if (response.statusCode != 200) {
+      throw Exception('Valyutani o\'zgartirishda xatolik yuz berdi');
     }
   }
 }

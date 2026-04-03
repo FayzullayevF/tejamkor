@@ -11,9 +11,11 @@ import 'package:tejamkor/home/home_view.dart';
 import 'package:tejamkor/categories/pages/categories_view.dart';
 import 'package:tejamkor/categories/pages/income_view.dart';
 import 'package:tejamkor/categories/pages/all_categories_view.dart';
+import 'package:tejamkor/home/pages/settings_view.dart';
+import 'package:tejamkor/home/pages/add_transaction_view.dart';
 
 final router = GoRouter(
-  initialLocation: Routers.onboarding,
+  initialLocation: Routers.addTransaction,
   routes: [
     GoRoute(path: Routers.onboarding, builder: (_, _) => OnboardingView()),
     GoRoute(path: Routers.login, builder: (_, _) => LoginView()),
@@ -39,5 +41,10 @@ final router = GoRouter(
     ),
     GoRoute(path: Routers.expense, builder: (_, _) => ExpenseView()),
     GoRoute(path: Routers.income, builder: (_, _) => IncomeView()),
+    GoRoute(path: Routers.settings, builder: (_, _) => SettingsView()),
+    GoRoute(
+      path: Routers.addTransaction,
+      builder: (_, _) => AddTransactionView(),
+    ),
   ],
 );

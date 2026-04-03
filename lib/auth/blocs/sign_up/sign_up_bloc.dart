@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:tejamkor/auth/blocs/sign_up/sign_up_event.dart';
 import 'package:tejamkor/auth/blocs/sign_up/sign_up_state.dart';
 import 'package:tejamkor/core/data/repos/auth_repository.dart';
+import 'package:tejamkor/core/utils/error_parser.dart';
 
 class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
   final AuthRepository _repo;
@@ -23,16 +24,16 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
       final store = await _repo.signUp(
         passwordConfirm: passwordConfirmController.text.trim(),
         fullName: fullNameController.text.trim(),
-        email: emailController.text.trim(),
+        emailTelefonRaqami: emailController.text.trim(),
         password: passwordController.text.trim(),
       );
       if (store) {
         emit(state.copyWith(status: SignUpStatus.success));
       } else {
-        emit(state.copyWith(status: SignUpStatus.error,errorMessage: "Ro'yxatdan o'tish muvaffaqiyatsiz tugadi"));
+        emit(state.copyWith(status: SignUpStatus.error,errorMessage: "Ro'yxatdan o'tish kutilmaganda to'xtatildi. Qayta urinib ko'ring."));
       }
     } catch (e) {
-      emit(state.copyWith(status: SignUpStatus.error, errorMessage: e.toString()));
+      emit(state.copyWith(status: SignUpStatus.error, errorMessage: ErrorParser.parse(e)));
     }
   }
 

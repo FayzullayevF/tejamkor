@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tejamkor/categories/widgets/currency_card.dart';
 import 'package:tejamkor/categories/widgets/search_card.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
+import 'package:tejamkor/categories/blocs/currency/currency_event.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_state.dart';
 
 class CategoriesView extends StatefulWidget {
@@ -20,17 +21,35 @@ class _CategoriesViewState extends State<CategoriesView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CurrencyBloc, CurrencyState>(
+    return BlocConsumer<CurrencyBloc, CurrencyState>(
+      listener: (context, state) {
+        if (state.status == CurrencyStatus.updated) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Valyuta muvaffaqiyatli saqlandi!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+        if (state.status == CurrencyStatus.error) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Xatolik: ${state.errorMessage}"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      },
       builder: (context, state) {
         if (state.status == CurrencyStatus.loading || state.status == CurrencyStatus.idle) {
           return const Center(child: CircularProgressIndicator(color: Color(0xFF0ED2C9)));
         }
 
-        if (state.status == CurrencyStatus.error) {
+        final currencies = state.response?.availableCurrencies ?? [];
+
+        if (state.status == CurrencyStatus.error && currencies.isEmpty) {
           return Center(child: Text("Xatolik: ${state.errorMessage}"));
         }
-
-        final currencies = state.response?.availableCurrencies ?? [];
         
         // Agar tanlangan valyuta API dan kelgan bo'lsa va local state hali tanlanmagan bo'lsa
         if (selectedCurrencyCode == null && state.response?.currencyDetail != null) {
@@ -60,6 +79,7 @@ class _CategoriesViewState extends State<CategoriesView> {
                         setState(() {
                           selectedCurrencyCode = currency.code;
                         });
+                        context.read<CurrencyBloc>().add(CurrencyUpdated(currency.id));
                       },
                     ),
                   );

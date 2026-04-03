@@ -18,6 +18,7 @@ class AuthTextField extends StatefulWidget {
     this.textInputAction,
     this.focusNode,
     this.nextFocusNode,
+    this.validatorOverride,
   });
 
   final TextEditingController controller;
@@ -31,6 +32,7 @@ class AuthTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final FocusNode? focusNode;
   final FocusNode? nextFocusNode;
+  final String? Function(String?)? validatorOverride;
 
   @override
   State<AuthTextField> createState() => _AuthTextFieldState();
@@ -112,7 +114,36 @@ class _AuthTextFieldState extends State<AuthTextField> {
     return [LengthLimitingTextInputFormatter(60)];
   }
 
-  String? validator(String? value) {
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onTextChanged);
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    if (_errorText != null) {
+      final err = _internalValidator(widget.controller.text);
+      if (_errorText != err) {
+        setState(() => _errorText = err);
+      } else {
+        setState(() {}); // Rebuild to update empty state checks
+      }
+    }
+  }
+
+  String? _internalValidator(String? value) {
+    if (widget.validatorOverride != null) {
+      return widget.validatorOverride!(value);
+    }
+
     final v = (value ?? "").trim();
 
     switch (widget.type) {
@@ -122,20 +153,30 @@ class _AuthTextFieldState extends State<AuthTextField> {
         return null;
 
       case AuthFieldType.email:
-        if (v.isEmpty) return "Emailni kiriting";
-        final ok = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$').hasMatch(v);
-        if (!ok) return "Email noto‘g‘ri formatda";
+        if (v.isEmpty) return "Maydonni bo'sh qoldirmang";
+        final isEmail = RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]{2,}$').hasMatch(v);
+        final isPhone = RegExp(r'^\+?[0-9\-\s]{7,15}$').hasMatch(v);
+        if (!isEmail && !isPhone) return "Noto‘g‘ri email yoki telefon formati";
         return null;
 
       case AuthFieldType.password:
         if (v.isEmpty) return "Parolni kiriting";
         if (v.length < 8) return "Parol kamida 8 ta belgi bo‘lsin";
-        final hasUpper = RegExp(r'[A-Z]').hasMatch(v);
-        final hasLower = RegExp(r'[a-z]').hasMatch(v);
+        
+        final hasLetter = RegExp(r'[a-zA-Z]').hasMatch(v);
         final hasDigit = RegExp(r'[0-9]').hasMatch(v);
-        if (!hasUpper || !hasLower || !hasDigit) {
-          return "Parolda katta harf, kichik harf va raqam bo‘lsin";
+        final hasSymbol = RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-\+=~`\[\]\\/]').hasMatch(v);
+
+        if (!hasLetter) {
+          return "Parolda kamida 1 ta harf qatnashishi kerak";
         }
+        if (!hasDigit) {
+          return "Parolda kamida 1 ta raqam qatnashishi kerak";
+        }
+        if (!hasSymbol) {
+          return "Parolda kamida 1 ta maxsus belgi qatnashishi kerak";
+        }
+        
         return null;
 
       case AuthFieldType.phone:
@@ -144,6 +185,21 @@ class _AuthTextFieldState extends State<AuthTextField> {
         if (digits.length < 9) return "Telefon raqam juda qisqa";
         return null;
     }
+  }
+
+  String? validator(String? value) {
+    final err = _internalValidator(value);
+    
+    if (_errorText != err) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() => _errorText = err);
+      });
+    }
+
+    if (err != null && (value == null || value.trim().isEmpty)) {
+      return ''; // Native g'ururni yashiradi, xato rasmini beradi. Hint orqali ichida chiqaramiz.
+    }
+    return err;
   }
 
   void _onSubmitted(String _) {
@@ -180,20 +236,42 @@ class _AuthTextFieldState extends State<AuthTextField> {
         color: Colors.black,
       ),
         decoration: InputDecoration(
-          labelText: widget.labelText ?? _defaultLabel,
-
+          labelText: (_errorText != null && widget.controller.text.isEmpty)
+              ? _errorText
+              : (widget.labelText ?? _defaultLabel),
           floatingLabelBehavior: FloatingLabelBehavior.auto,
+          filled: true,
+          fillColor: Colors.white,
 
-          labelStyle: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFF9AA3AE),
-          ),
+          labelStyle: (_errorText != null && widget.controller.text.isEmpty)
+              ? const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFFEF4444),
+                )
+              : const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF9AA3AE),
+                ),
 
-          floatingLabelStyle: const TextStyle(
-            fontSize: 12,
+          floatingLabelStyle: (_errorText != null && widget.controller.text.isEmpty)
+              ? const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFFEF4444),
+                )
+              : const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFF9AA3AE),
+                ),
+
+          hintText: widget.hintText ?? _defaultHint,
+          hintStyle: const TextStyle(
+            fontSize: 14,
             fontWeight: FontWeight.w500,
-            color: Color(0xFF9AA3AE),
+            color: Color(0xFFDCDCDC),
           ),
 
           prefixIcon: Padding(
@@ -213,36 +291,34 @@ class _AuthTextFieldState extends State<AuthTextField> {
 
           suffixIcon: _isPassword
               ? IconButton(
-            onPressed: () => setState(() => _obscure = !_obscure),
-            icon: Icon(
-              _obscure
-                  ? Icons.visibility_off_outlined
-                  : Icons.visibility_outlined,
-              size: 22,
-              color: const Color(0xFF9AA3AE),
-            ),
-          )
+                  onPressed: () => setState(() => _obscure = !_obscure),
+                  icon: Icon(
+                    _obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    size: 22,
+                    color: const Color(0xFF9AA3AE),
+                  ),
+                )
               : null,
 
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 22,
-          ),
+          contentPadding: const EdgeInsets.fromLTRB(16, 20, 16, 20),
 
-          errorStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w400,
-            color: Color(0xFFEF4444),
-            height: 1,
-          ),
-          helperText: ' ',
-          helperStyle: const TextStyle(
-            fontSize: 12,
-            height: 1,
-          ),
+          errorStyle: (_errorText != null && widget.controller.text.isEmpty)
+              ? const TextStyle(
+                  height: 0.0,
+                  fontSize: 1.0,
+                  color: Colors.transparent,
+                )
+              : const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: Color(0xFFEF4444),
+                  height: 1,
+                ),
           errorMaxLines: 2,
 
-          enabledBorder: OutlineInputBorder(
+          enabledBorder: RoundedRectInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
               color: Color(0xFFD7DCE2),
@@ -250,7 +326,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
             ),
           ),
 
-          focusedBorder: OutlineInputBorder(
+          focusedBorder: RoundedRectInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
               color: Color(0xFF2BB9B1),
@@ -258,7 +334,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
             ),
           ),
           
-          errorBorder: OutlineInputBorder(
+          errorBorder: RoundedRectInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
               color: Color(0xFFEF4444),
@@ -266,7 +342,7 @@ class _AuthTextFieldState extends State<AuthTextField> {
             ),
           ),
           
-          focusedErrorBorder: OutlineInputBorder(
+          focusedErrorBorder: RoundedRectInputBorder(
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(
               color: Color(0xFFEF4444),
@@ -288,5 +364,67 @@ class _AuthTextFieldState extends State<AuthTextField> {
       case AuthFieldType.phone:
         return const [AutofillHints.telephoneNumber];
     }
+  }
+}
+
+class RoundedRectInputBorder extends InputBorder {
+  const RoundedRectInputBorder({
+    super.borderSide = const BorderSide(),
+    this.borderRadius = const BorderRadius.all(Radius.circular(16.0)),
+  });
+
+  final BorderRadius borderRadius;
+
+  @override
+  bool get isOutline => false;
+
+  @override
+  RoundedRectInputBorder copyWith({
+    BorderSide? borderSide,
+    BorderRadius? borderRadius,
+  }) {
+    return RoundedRectInputBorder(
+      borderSide: borderSide ?? this.borderSide,
+      borderRadius: borderRadius ?? this.borderRadius,
+    );
+  }
+
+  @override
+  EdgeInsetsGeometry get dimensions => EdgeInsets.all(borderSide.width);
+
+  @override
+  Path getInnerPath(Rect rect, {TextDirection? textDirection}) {
+    return Path()
+      ..addRRect(borderRadius
+          .resolve(textDirection)
+          .toRRect(rect)
+          .deflate(borderSide.width));
+  }
+
+  @override
+  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
+    return Path()..addRRect(borderRadius.resolve(textDirection).toRRect(rect));
+  }
+
+  @override
+  void paint(
+    Canvas canvas,
+    Rect rect, {
+    double? gapStart,
+    double gapExtent = 0.0,
+    double gapPercentage = 0.0,
+    TextDirection? textDirection,
+  }) {
+    final Paint paint = borderSide.toPaint();
+    final RRect outer = borderRadius.resolve(textDirection).toRRect(rect);
+    canvas.drawRRect(outer, paint);
+  }
+
+  @override
+  ShapeBorder scale(double t) {
+    return RoundedRectInputBorder(
+      borderSide: borderSide.scale(t),
+      borderRadius: borderRadius * t,
+    );
   }
 }

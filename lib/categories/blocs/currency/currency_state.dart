@@ -3,7 +3,7 @@ import 'package:tejamkor/categories/data/models/currency_model.dart';
 
 part 'currency_state.freezed.dart';
 
-enum CurrencyStatus { idle, loading, success, error }
+enum CurrencyStatus { idle, loading, success, error, updating, updated }
 
 @freezed
 abstract class CurrencyState with _$CurrencyState {

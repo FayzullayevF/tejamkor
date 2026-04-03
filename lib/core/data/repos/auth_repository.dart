@@ -32,13 +32,13 @@ class AuthRepository {
   Future<bool> signUp({
     required String passwordConfirm,
     required String fullName,
-    required String email,
+    required String emailTelefonRaqami,
     required String password,
   }) async {
     final result = await client.signUp(
       AuthModel(
         full_name: fullName,
-        email: email,
+        email_telefon_raqami: emailTelefonRaqami,
         password_confirm: passwordConfirm,
         password: password,
       ),
@@ -49,9 +49,10 @@ class AuthRepository {
   Future<void> logout() async {
     try {
       final refreshToken = await AppSecureStorage.getRefreshToken();
+      final email = await AppSecureStorage.getLogin();
 
       if (refreshToken != null && refreshToken.isNotEmpty) {
-        await client.logout(refreshToken: refreshToken);
+        await client.logout(refreshToken: refreshToken, email: email);
       }
     } on DioException {
       print("Dio Exception");

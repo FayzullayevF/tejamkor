@@ -9,6 +9,7 @@ import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_bloc.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_event.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_state.dart';
 import 'package:tejamkor/core/routing/router.dart';
+import 'show_error_dialog.dart';
 
 Future<String?> showOtpDialog({
   required BuildContext context,
@@ -149,7 +150,7 @@ class _OtpVerifyDialogState extends State<OtpVerifyDialog> {
           context.go(Routers.login);
         }
         if (state.status == ForgotPasswordStatus.error) {
-          _snack(state.error ?? "Xatolik");
+          showErrorDialog(context, state.error ?? "Xatolik");
         }
       },
       child: Dialog(

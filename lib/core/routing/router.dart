@@ -9,4 +9,6 @@ class Routers {
   static const categories = "/categories";
   static const expense = "/expense";
   static const income = "/income";
+  static const settings = "/settings";
+  static const addTransaction = "/addTransaction";
 }

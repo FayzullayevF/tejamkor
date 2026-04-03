@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tejamkor/auth/widgets/auth_app_bar.dart';
-import 'package:tejamkor/core/utils/app_colors.dart';
 import 'auth_segmented.dart';
 
 class AuthPanel extends StatelessWidget {
@@ -25,10 +24,13 @@ class AuthPanel extends StatelessWidget {
           height: MediaQuery.of(context).size.height,
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [AppColors.cyanAccent, AppColors.darkNavy],
-              stops: [0.0, 0.6],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
+              colors: [
+                const Color.fromARGB(255, 47, 215, 230),
+                const Color.fromARGB(255, 10, 20, 35),
+              ],
+              stops: [0.0, 0.4],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
             ),
           ),
         ),
@@ -59,7 +61,7 @@ class AuthPanel extends StatelessWidget {
                     Text(
                       "Pullaringizni biz orqali tejang!",
                       style: TextStyle(
-                        color: Color(0xffDCDCDC),
+                        color: Colors.white70,
                         fontSize: 16,
                         fontWeight: FontWeight.w400,
                       ),
@@ -89,6 +91,15 @@ class AuthPanel extends StatelessWidget {
                     Expanded(
                       child: AnimatedSwitcher(
                         duration: Duration(milliseconds: 160),
+                        layoutBuilder: (currentChild, previousChildren) {
+                          return Stack(
+                            alignment: Alignment.topCenter,
+                            children: [
+                              ...previousChildren,
+                              if (currentChild != null) currentChild,
+                            ],
+                          );
+                        },
                         child: child,
                       ),
                     ),

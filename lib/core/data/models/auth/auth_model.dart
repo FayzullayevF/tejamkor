@@ -1,16 +1,16 @@
 class AuthModel {
   AuthModel({
-    required this.email,
+    required this.email_telefon_raqami,
     required this.password,
     required this.password_confirm,
     required this.full_name,
   });
 
-  final String email, password, password_confirm, full_name;
+  final String email_telefon_raqami, password, password_confirm, full_name;
 
   Map<String, dynamic> toJson() {
     return {
-      "email": email,
+      "email_telefon_raqami": email_telefon_raqami,
       "password": password,
       "password_confirm": password_confirm,
       "full_name": full_name,

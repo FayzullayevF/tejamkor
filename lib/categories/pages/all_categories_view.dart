@@ -66,7 +66,10 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AuthAppBar(voidCallback: _previousPage),
+      appBar: AuthAppBar(
+        voidCallback: _previousPage,
+        backArrowColor: Colors.black,
+      ),
       body: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
         child: Column(

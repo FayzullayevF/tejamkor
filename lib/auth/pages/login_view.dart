@@ -15,10 +15,6 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   bool isLogin = true;
 
-  void _submitLogin() {
-    debugPrint("LOGIN SUBMIT");
-  }
-
   void _submitRegister() {
     debugPrint("REGISTER SUBMIT");
   }

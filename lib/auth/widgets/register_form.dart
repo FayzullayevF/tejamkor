@@ -4,9 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:tejamkor/auth/blocs/sign_up/sign_up_bloc.dart';
 import 'package:tejamkor/auth/blocs/sign_up/sign_up_event.dart';
 import 'package:tejamkor/auth/blocs/sign_up/sign_up_state.dart';
-import '../../core/data/repos/auth_repository.dart';
 import '../../widgets/app_button.dart';
 import 'auth_text_field.dart';
+import 'show_error_dialog.dart';
 
 class RegisterForm extends StatelessWidget {
   const RegisterForm({
@@ -36,11 +36,8 @@ class _RegisterFormBody extends StatefulWidget {
 
 class _RegisterFormBodyState extends State<_RegisterFormBody> {
   final _formKey = GlobalKey<FormState>();
-  final phoneController = TextEditingController();
-
   @override
   void dispose() {
-    phoneController.dispose();
     super.dispose();
   }
 
@@ -85,9 +82,7 @@ class _RegisterFormBodyState extends State<_RegisterFormBody> {
         }
 
         if (state.status == SignUpStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? "Xatolik yuz berdi")),
-          );
+          showErrorDialog(context, state.errorMessage ?? "Xatolik yuz berdi");
         }
       },
       child: Form(
@@ -95,38 +90,42 @@ class _RegisterFormBodyState extends State<_RegisterFormBody> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              SizedBox(height: 29.h),
+              SizedBox(height: 20.h),
               AuthTextField(
                 controller: bloc.fullNameController,
                 type: AuthFieldType.name,
                 labelText: "To'liq ismingiz",
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 15.h),
               AuthTextField(
                 controller: bloc.emailController,
                 type: AuthFieldType.email,
-                labelText: "Email pochtangiz",
+                labelText: "Email pochtangiz yoki telefon raqamingiz",
               ),
-              SizedBox(height: 12.h),
-              AuthTextField(
-                controller: phoneController,
-                type: AuthFieldType.phone,
-                labelText: "Telefon nomeringiz",
-                hintText: "+998-***-**-**",
-              ),
-              SizedBox(height: 12.h),
+
+              SizedBox(height: 15.h),
               AuthTextField(
                 controller: bloc.passwordController,
                 type: AuthFieldType.password,
                 labelText: "Parol",
                 hintText: "Kamida 8 ta belgi",
               ),
-              SizedBox(height: 12.h),
+              SizedBox(height: 15.h),
               AuthTextField(
                 controller: bloc.passwordConfirmController,
                 type: AuthFieldType.password,
                 labelText: "Parolingizni tasdiqlang",
                 hintText: "Parolni qayta kiriting",
+                svgAsset: "assets/icons/circle_arrow.svg",
+                validatorOverride: (value) {
+                  if (value == null || value.isEmpty) {
+                    return "Parolni tasdiqlash uchun qayta kiriting";
+                  }
+                  if (value != bloc.passwordController.text) {
+                    return "Parollar mos emas";
+                  }
+                  return null;
+                },
               ),
               SizedBox(height: 30.h),
               AppButton(

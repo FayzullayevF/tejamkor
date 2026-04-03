@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tejamkor/auth/blocs/login/login_event.dart';
 import 'package:tejamkor/auth/blocs/login/login_state.dart';
 import 'package:tejamkor/core/data/repos/auth_repository.dart';
+import 'package:tejamkor/core/utils/error_parser.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final AuthRepository _repo;
@@ -32,7 +33,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       print("Login error $e");
       print("STACKTRACE: $s");
       emit(
-        state.copyWith(status: LoginStatus.error, errorMessage: e.toString()),
+        state.copyWith(status: LoginStatus.error, errorMessage: ErrorParser.parse(e)),
       );
     }
   }

@@ -11,8 +11,10 @@ import 'package:tejamkor/categories/data/repositories/category_repository.dart';
 import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
 import 'package:tejamkor/categories/data/repositories/currency_repository.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
+import 'package:tejamkor/core/theme_notifier.dart';
 
 List<SingleChildWidget> providers = [
+  ChangeNotifierProvider(create: (_) => ThemeNotifier()),
   Provider(create: (context) => ApiClient()),
   Provider(create: (context) => AuthRepository(client: context.read())),
   Provider(create: (context) => CategoryRepository(apiClient: context.read())),

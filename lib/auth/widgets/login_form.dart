@@ -10,6 +10,7 @@ import 'package:tejamkor/core/routing/router.dart';
 import 'package:tejamkor/core/utils/app_colors.dart';
 import 'package:tejamkor/widgets/app_button.dart';
 import 'auth_text_field.dart';
+import 'show_error_dialog.dart';
 
 class LoginForm extends StatelessWidget {
   const LoginForm({
@@ -111,32 +112,34 @@ class _LoginFormBodyState extends State<_LoginFormBody> {
         }
 
         if (state.status == LoginStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.errorMessage ?? "Login xatoligi"),
-            ),
-          );
+          showErrorDialog(context, state.errorMessage ?? "Login xatoligi");
         }
       },
       child: Form(
         key: _formKey,
         child: Column(
           children: [
-            SizedBox(height: 29.h),
+            SizedBox(height: 20.h),
             AuthTextField(
               controller: bloc.emailController,
               type: AuthFieldType.email,
               labelText: "Email pochtangiz",
-              hintText: "To'liq ismingiz",
+              hintText: "Misol uchun: user@gmail.com",
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 10.h),
             AuthTextField(
               controller: bloc.passwordController,
               type: AuthFieldType.password,
               labelText: "Parolingiz",
               hintText: "********",
+              validatorOverride: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return "Parolni kiriting";
+                }
+                return null;
+              },
             ),
-            SizedBox(height: 12.h),
+            SizedBox(height: 10.h),
             Row(
               children: [
                 Checkbox(

@@ -8,6 +8,7 @@ import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_state.dart';
 import 'package:tejamkor/auth/widgets/auth_app_bar.dart';
 import 'package:tejamkor/auth/widgets/auth_text_field.dart';
 import 'package:tejamkor/auth/widgets/show_otp_dialog.dart';
+import 'package:tejamkor/auth/widgets/show_error_dialog.dart';
 import 'package:tejamkor/core/routing/router.dart';
 import 'package:tejamkor/widgets/app_button.dart';
 
@@ -45,9 +46,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
           context.push(Routers.enterPassword, extra: state.resetToken);
         }
         if (state.status == ForgotPasswordStatus.error) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text("Xatolik yuz berdi")));
+          showErrorDialog(context, state.error ?? "Xatolik yuz berdi");
         }
       },
       child: Scaffold(
@@ -79,7 +78,6 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 ),
               ),
             ),
-            AuthAppBar(),
             SafeArea(
               child: SingleChildScrollView(
                 child: Padding(
@@ -150,6 +148,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                 ),
               ),
             ),
+            const AuthAppBar(),
           ],
         ),
       ),

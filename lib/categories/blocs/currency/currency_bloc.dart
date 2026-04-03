@@ -8,6 +8,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
 
   CurrencyBloc(this._repository) : super(CurrencyState.initial()) {
     on<CurrencyFetched>(_onFetched);
+    on<CurrencyUpdated>(_onUpdated);
   }
 
   Future<void> _onFetched(
@@ -26,6 +27,27 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
         status: CurrencyStatus.error,
         errorMessage: e.toString(),
       ));
+    }
+  }
+
+  Future<void> _onUpdated(
+    CurrencyUpdated event,
+    Emitter<CurrencyState> emit,
+  ) async {
+    final previousState = state;
+    emit(state.copyWith(status: CurrencyStatus.updating));
+    try {
+      await _repository.updateUserCurrency(event.currencyId);
+      emit(state.copyWith(status: CurrencyStatus.updated));
+      // Option: refetch the currency logic
+      // add(CurrencyFetched());
+    } catch (e) {
+      emit(state.copyWith(
+        status: CurrencyStatus.error,
+        errorMessage: e.toString(),
+      ));
+      // After showing error, we can optionally revert to previous state
+      emit(previousState);
     }
   }
 }
