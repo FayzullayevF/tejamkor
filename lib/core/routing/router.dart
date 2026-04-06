@@ -13,6 +13,8 @@ class Routers {
   static const addTransaction = "/addTransaction";
   static const monthlyLimit = "/monthlyLimit";
   static const statistics = "/statistics";
+  static const transactionHistory = "/transactionHistory";
+
 
 
 }

@@ -60,8 +60,6 @@ class _HomeViewState extends State<HomeView> {
               ],
             ),
           ),
-
-          // Yangi Floating Custom Nav Bar
           _buildCustomNavBar(),
         ],
       ),
@@ -88,7 +86,8 @@ class _HomeViewState extends State<HomeView> {
           AccountsCard(),
           SizedBox(height: 24.h),
           CurrencyRatesCard(),
-          SizedBox(height: 120.h), // nav bar uchun joy
+          SizedBox(height: 120.h),
+
         ],
       ),
     );

@@ -21,7 +21,7 @@ class CategoriesContainer extends StatefulWidget {
 }
 
 class _CategoriesContainerState extends State<CategoriesContainer> {
-  double value = 1200; // boshlang‘ich summa
+  double value = 1200;
 
   @override
   Widget build(BuildContext context) {
@@ -65,8 +65,6 @@ class _CategoriesContainerState extends State<CategoriesContainer> {
                   ],
                 ),
               ),
-
-              /// 🔥 SUM (dynamic)
               Text(
                 "\$${NumberFormat('#,###').format(value)}",
                 style: TextStyle(
@@ -76,10 +74,7 @@ class _CategoriesContainerState extends State<CategoriesContainer> {
               ),
             ],
           ),
-
           SizedBox(height: 15.h),
-
-          /// 🔥 SLIDER
           Slider(
             thumbColor: Color(0xff006673),
             inactiveColor: Color(0xffE5E9EA),
