@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/svg.dart';
 
 class AccountsCard extends StatelessWidget {
   const AccountsCard({super.key});
@@ -16,32 +17,32 @@ class AccountsCard extends StatelessWidget {
         children: [
           Text(
             "Hisoblar",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
           _buildAccountListItem(
-            Icons.account_balance_wallet_outlined,
+            "assets/icons/naqd_pul.svg",
             "Naqd pul UZS",
             "1 200 000 UZS",
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 5.h),
           _buildAccountListItem(
-            Icons.account_balance_wallet_outlined,
+            "assets/icons/naqd_pul.svg",
             "Naqd pul USD",
             "250 USD",
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 5.h),
           _buildAccountListItem(
-            Icons.credit_card_outlined,
+            "assets/icons/hamkorbank.svg",
             "HAMKORBANK",
             "3 000 000 UZS",
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
           Text(
             "Barchasi",
             style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
               color: Colors.black,
             ),
           ),
@@ -50,26 +51,43 @@ class AccountsCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAccountListItem(IconData icon, String title, String amount) {
+  Widget _buildAccountListItem(String icon, String title, String amount) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      height: 59.h,
+      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 5.h),
       decoration: BoxDecoration(
         color: const Color(0xffF9F9F9),
         borderRadius: BorderRadius.circular(30.r),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Icon(icon, color: Colors.black54, size: 22.w),
+          Container(
+            height: 49.h,
+            width: 49.w,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                icon,
+                color: Colors.black54,
+                height: 16.h,
+                width: 24.w,
+              ),
+            ),
+          ),
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
               title,
-              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 13.sp),
+              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14),
             ),
           ),
           Text(
             amount,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
           ),
         ],
       ),

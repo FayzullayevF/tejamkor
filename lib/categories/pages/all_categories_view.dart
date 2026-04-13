@@ -10,6 +10,7 @@ import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_event.dart';
 import 'package:tejamkor/widgets/app_button.dart';
 import 'package:tejamkor/categories/widgets/header.dart';
+import 'package:tejamkor/categories/data/repositories/category_repository.dart';
 import 'currency_view.dart';
 import 'categories_view.dart';
 import 'income_view.dart';
@@ -24,6 +25,8 @@ class AllCategoriesView extends StatefulWidget {
 class _AllCategoriesViewState extends State<AllCategoriesView> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
+  final Set<int> _selectedIds = {};
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -32,7 +35,17 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
     context.read<CurrencyBloc>().add(CurrencyFetched());
   }
 
-  void _nextPage() {
+  void _toggleSelection(int id) {
+    setState(() {
+      if (_selectedIds.contains(id)) {
+        _selectedIds.remove(id);
+      } else {
+        _selectedIds.add(id);
+      }
+    });
+  }
+
+  Future<void> _nextPage() async {
     FocusScope.of(context).unfocus();
     if (_currentIndex < 2) {
       _pageController.nextPage(
@@ -40,7 +53,22 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
         curve: Curves.easeInOut,
       );
     } else {
-      context.go(Routers.home);
+      if (_selectedIds.isNotEmpty) {
+        setState(() {
+          _isLoading = true;
+        });
+        try {
+          final repo = context.read<CategoryRepository>();
+          await repo.selectDefaultCategories(_selectedIds.toList());
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        } finally {
+          setState(() {
+            _isLoading = false;
+          });
+        }
+      }
+      if (mounted) context.go(Routers.home);
     }
   }
 
@@ -86,19 +114,21 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
                   });
                 },
                 children: [
-                  const CategoriesView(),
-                  const ExpenseView(),
-                  const IncomeView(),
+                  const CategoriesView(), // This is the generic view, wait what is CategoriesView in this context?
+                  ExpenseView(selectedIds: _selectedIds, onToggle: _toggleSelection),
+                  IncomeView(selectedIds: _selectedIds, onToggle: _toggleSelection),
                 ],
               ),
             ),
             SizedBox(height: 16.h),
-            AppButton(
-              height: 73.h,
-              weight: double.infinity,
-              title: "Keyingi sahifaga o'tish",
-              voidCallback: _nextPage,
-            ),
+            _isLoading 
+                ? const CircularProgressIndicator(color: Color(0xFF0ED2C9))
+                : AppButton(
+                    height: 73.h,
+                    weight: double.infinity,
+                    title: "Keyingi sahifaga o'tish",
+                    voidCallback: _nextPage,
+                  ),
             SizedBox(height: 20.h),
           ],
         ),

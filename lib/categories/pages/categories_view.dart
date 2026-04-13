@@ -6,17 +6,11 @@ import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
 import 'package:tejamkor/categories/blocs/category/category_state.dart';
 import 'package:tejamkor/categories/widgets/category_card.dart';
 
-class ExpenseView extends StatefulWidget {
-  const ExpenseView({super.key, this.onNext});
+class ExpenseView extends StatelessWidget {
+  const ExpenseView({super.key, required this.selectedIds, required this.onToggle});
 
-  final VoidCallback? onNext;
-
-  @override
-  State<ExpenseView> createState() => _ExpenseViewState();
-}
-
-class _ExpenseViewState extends State<ExpenseView> {
-  final Set<String> _selectedCards = {};
+  final Set<int> selectedIds;
+  final Function(int) onToggle;
 
   // API faqat FontAwesome class nomlarini (fa-utensils) jo'natyapti.
   // Lekin sizda chiroyli qilingan o'zingizni SVG fayllaringiz (assets/icons/...) papkasida yotibdi.
@@ -144,15 +138,9 @@ class _ExpenseViewState extends State<ExpenseView> {
             return CategoryCard(
               title: title,
               icon: _buildIcon(item.icon, title),
-              isSelected: _selectedCards.contains(title),
+              isSelected: selectedIds.contains(item.id),
               onTap: () {
-                setState(() {
-                  if (_selectedCards.contains(title)) {
-                    _selectedCards.remove(title);
-                  } else {
-                    _selectedCards.add(title);
-                  }
-                });
+                onToggle(item.id);
               },
             );
           },

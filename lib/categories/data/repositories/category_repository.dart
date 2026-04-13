@@ -13,4 +13,20 @@ class CategoryRepository {
       throw Exception(e.toString());
     }
   }
+
+  Future<List<CategoryModel>> getUserCategories() async {
+    try {
+      return await apiClient.getUserCategories();
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  Future<void> selectDefaultCategories(List<int> categoryIds) async {
+    try {
+      await apiClient.selectDefaultCategories(categoryIds);
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
 }

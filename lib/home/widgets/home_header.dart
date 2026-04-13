@@ -12,7 +12,7 @@ class HomeHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         CircleAvatar(
-          backgroundColor: Colors.white.withOpacity(0.15),
+          backgroundColor: Colors.white.withValues(alpha: 0.15),
           radius: 20.r,
           child: GestureDetector(
             onTap: () {
@@ -34,7 +34,7 @@ class HomeHeader extends StatelessWidget {
           ),
         ),
         CircleAvatar(
-          backgroundColor: Colors.white.withOpacity(0.15),
+          backgroundColor: Colors.white.withValues(alpha: 0.15),
           radius: 20.r,
           child: Icon(
             Icons.notifications_none_outlined,

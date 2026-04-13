@@ -23,7 +23,6 @@ class _ChartCardState extends State<ChartCard> {
       ),
       child: Column(
         children: [
-          // Segmented Toggle
           Container(
             padding: EdgeInsets.all(4.w),
             decoration: BoxDecoration(
@@ -50,7 +49,7 @@ class _ChartCardState extends State<ChartCard> {
                         child: Text(
                           "Xarajat",
                           style: TextStyle(
-                            fontSize: 13.sp,
+                            fontSize: 18,
                             fontWeight: isExpenseSelected
                                 ? FontWeight.bold
                                 : FontWeight.w500,
@@ -81,7 +80,7 @@ class _ChartCardState extends State<ChartCard> {
                         child: Text(
                           "Daromad",
                           style: TextStyle(
-                            fontSize: 13.sp,
+                            fontSize: 18,
                             fontWeight: !isExpenseSelected
                                 ? FontWeight.bold
                                 : FontWeight.w500,
@@ -98,20 +97,22 @@ class _ChartCardState extends State<ChartCard> {
             ),
           ),
           SizedBox(height: 30.h),
-          // Donut Chart Mock
           SizedBox(
-            height: 200.w,
-            width: 200.w,
+            height: 300.w,
+            width: 300.w,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                // Inner texts
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       "Mart oyi uchun",
-                      style: TextStyle(color: Colors.black54, fontSize: 11.sp),
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                     SizedBox(height: 4.h),
                     Text(
@@ -119,21 +120,19 @@ class _ChartCardState extends State<ChartCard> {
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.black,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 32,
                       ),
                     ),
                   ],
                 ),
-                // Painter bounds
                 Positioned.fill(
                   child: CustomPaint(painter: DonutChartPainter()),
                 ),
               ],
             ),
           ),
-          SizedBox(height: 30.h),
-          // List Items below chart
+          SizedBox(height: 47.h),
           _buildChartListItem(
             iconSrc: "assets/icons/car.svg",
             bgColor: const Color(0xff0ED2C9),
@@ -169,67 +168,67 @@ class _ChartCardState extends State<ChartCard> {
     required String subtext,
     required String amount,
   }) {
-    return Row(
-      children: [
-        Container(
-          width: 44.w,
-          height: 44.w,
-          decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
-          alignment: Alignment.center,
-          child: SvgPicture.asset(
-            iconSrc,
-            color: Colors.white,
-            width: 22.w,
-            height: 22.w,
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 7.w, vertical: 5.h),
+      height: 59.h,
+      decoration: BoxDecoration(
+        color: const Color(0xffF3F3F3),
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 50.w,
+            height: 49.w,
+            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
+            alignment: Alignment.center,
+            child: SvgPicture.asset(iconSrc, color: Colors.white),
           ),
-        ),
-        SizedBox(width: 12.w),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13.sp),
-            ),
-            Text(
-              subtext,
-              style: TextStyle(color: Colors.grey, fontSize: 11.sp),
-            ),
-          ],
-        ),
-        const Spacer(),
-        Text(
-          amount,
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
-        ),
-      ],
+          SizedBox(width: 12.w),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+              ),
+              Text(
+                subtext,
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          ),
+          const Spacer(),
+          Text(
+            amount,
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+          ),
+        ],
+      ),
     );
   }
 }
 
-// A straightforward replica of the 3-section donut chart seen in the design
 class DonutChartPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2 - 14;
 
-    final paint =Paint()
+    final paint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 12
       ..strokeCap = StrokeCap.round;
-
     final rect = Rect.fromCircle(center: center, radius: radius);
-
-    // Cyan (Top/Right, biggest) ~ 40%
-    paint.color = const Color(0xff0ED2C9);
+    paint.color = const Color(0xff0DB7D1);
     canvas.drawArc(rect, -pi / 2, pi, false, paint);
-
-    // Orange (Bottom/Right) ~ 40%
     paint.color = const Color(0xffFFA000);
     canvas.drawArc(rect, pi / 2 + 0.2, pi * 0.7, false, paint);
-
-    // Purple (Bottom/Left) ~ 20%
     paint.color = const Color(0xffAB47BC);
     canvas.drawArc(rect, pi * 1.3, pi * 0.4, false, paint);
   }

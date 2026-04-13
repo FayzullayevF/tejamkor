@@ -10,7 +10,9 @@ class DailyAverage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xffF0F4F5).withOpacity(0.9), // light grey background
+        color: const Color(
+          0xffF0F4F5,
+        ).withValues(alpha: 0.9), // light grey background
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -23,12 +25,12 @@ class DailyAverage extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-           SizedBox(width: 24.w),
+          SizedBox(width: 24.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                 Text(
+                Text(
                   "KUNLIK O‘RTACHA",
                   style: TextStyle(
                     fontSize: 12,
@@ -36,21 +38,15 @@ class DailyAverage extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                 SizedBox(height: 4.h),
-                 Text(
+                SizedBox(height: 4.h),
+                Text(
                   "\$142.85",
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
                 ),
-                 SizedBox(height: 4.h),
-                 Text(
+                SizedBox(height: 4.h),
+                Text(
                   "\$150 kunlik sarflash limiti",
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xff006673),
-                  ),
+                  style: TextStyle(fontSize: 12, color: Color(0xff006673)),
                 ),
               ],
             ),
@@ -60,12 +56,12 @@ class DailyAverage extends StatelessWidget {
           Container(
             height: 48,
             width: 48,
-            padding: EdgeInsets.symmetric(vertical: 16.h,horizontal: 16.w),
+            padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 16.w),
             decoration: BoxDecoration(
               color: Colors.white,
               shape: BoxShape.circle,
             ),
-            child: SvgPicture.asset("assets/icons/leaf.svg",)
+            child: SvgPicture.asset("assets/icons/leaf.svg"),
           ),
         ],
       ),

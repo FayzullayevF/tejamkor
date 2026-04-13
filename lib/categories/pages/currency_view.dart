@@ -41,8 +41,11 @@ class _CategoriesViewState extends State<CategoriesView> {
         }
       },
       builder: (context, state) {
-        if (state.status == CurrencyStatus.loading || state.status == CurrencyStatus.idle) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF0ED2C9)));
+        if (state.status == CurrencyStatus.loading ||
+            state.status == CurrencyStatus.idle) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF0ED2C9)),
+          );
         }
 
         final currencies = state.response?.availableCurrencies ?? [];
@@ -50,10 +53,11 @@ class _CategoriesViewState extends State<CategoriesView> {
         if (state.status == CurrencyStatus.error && currencies.isEmpty) {
           return Center(child: Text("Xatolik: ${state.errorMessage}"));
         }
-        
+
         // Agar tanlangan valyuta API dan kelgan bo'lsa va local state hali tanlanmagan bo'lsa
-        if (selectedCurrencyCode == null && state.response?.currencyDetail != null) {
-           selectedCurrencyCode = state.response!.currencyDetail!.code;
+        if (selectedCurrencyCode == null &&
+            state.response?.currencyDetail != null) {
+          selectedCurrencyCode = state.response!.currencyDetail!.code;
         }
 
         return SingleChildScrollView(
@@ -69,7 +73,9 @@ class _CategoriesViewState extends State<CategoriesView> {
                   return Padding(
                     padding: EdgeInsets.only(bottom: 15.h),
                     child: CurrencyCard(
-                      title: currency.name.isNotEmpty ? currency.name : currency.code,
+                      title: currency.name.isNotEmpty
+                          ? currency.name
+                          : currency.code,
                       subtitle: currency.code,
                       flagSvg: _getFlagSvg(currency.code),
                       activeColor: _getActiveColor(currency.code),
@@ -79,7 +85,9 @@ class _CategoriesViewState extends State<CategoriesView> {
                         setState(() {
                           selectedCurrencyCode = currency.code;
                         });
-                        context.read<CurrencyBloc>().add(CurrencyUpdated(currency.id));
+                        context.read<CurrencyBloc>().add(
+                          CurrencyUpdated(currency.id),
+                        );
                       },
                     ),
                   );
@@ -125,7 +133,7 @@ class _CategoriesViewState extends State<CategoriesView> {
   Color _getActiveBgColor(String code) {
     switch (code) {
       case "UZS":
-        return const Color(0xFF0ED2C9).withOpacity(0.1);
+        return const Color(0xFF0ED2C9).withValues(alpha: 0.1);
       case "RUB":
         return const Color(0xffFCE4EC);
       case "USD":
@@ -133,8 +141,7 @@ class _CategoriesViewState extends State<CategoriesView> {
       case "EUR":
         return const Color(0xffF3E5F5);
       default:
-        return const Color(0xFF0ED2C9).withOpacity(0.1);
+        return const Color(0xFF0ED2C9).withValues(alpha: 0.1);
     }
   }
 }
-

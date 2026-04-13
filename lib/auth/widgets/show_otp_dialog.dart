@@ -58,8 +58,12 @@ class _OtpVerifyDialogState extends State<OtpVerifyDialog> {
   @override
   void dispose() {
     _timer?.cancel();
-    for (final c in ctrl) c.dispose();
-    for (final n in nodes) n.dispose();
+    for (final c in ctrl) {
+      c.dispose();
+    }
+    for (final n in nodes) {
+      n.dispose();
+    }
     super.dispose();
   }
 
@@ -67,7 +71,9 @@ class _OtpVerifyDialogState extends State<OtpVerifyDialog> {
     _timer?.cancel();
     _secondsLeft = 60;
 
-    for (final c in ctrl) c.clear();
+    for (final c in ctrl) {
+      c.clear();
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) nodes.first.requestFocus();
     });
@@ -166,7 +172,7 @@ class _OtpVerifyDialogState extends State<OtpVerifyDialog> {
               BoxShadow(
                 blurRadius: 30,
                 offset: const Offset(0, 18),
-                color: Colors.black.withOpacity(0.25),
+                color: Colors.black.withValues(alpha: 0.25),
               ),
             ],
           ),

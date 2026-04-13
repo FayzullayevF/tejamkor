@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 
 class TotalContainer extends StatelessWidget {
-  const TotalContainer({super.key});
+  const TotalContainer({super.key, required this.allocated, required this.remaining});
+
+  final double allocated;
+  final double remaining;
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +36,7 @@ class TotalContainer extends StatelessWidget {
                 ),
                 SizedBox(height: 5.h),
                 Text(
-                  "\$4,650.00",
+                  "\$${NumberFormat('#,###.00', 'en_US').format(allocated)}",
                   style: TextStyle(
                     color: Color(0xff006673),
                     fontWeight: FontWeight.w700,
@@ -55,7 +59,7 @@ class TotalContainer extends StatelessWidget {
                 ),
                 SizedBox(height: 5.h),
                 Text(
-                  "\$350.00",
+                  "\$${NumberFormat('#,###.00', 'en_US').format(remaining)}",
                   style: TextStyle(
                     color: Color(0xff006673),
                     fontWeight: FontWeight.w700,

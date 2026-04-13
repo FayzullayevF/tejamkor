@@ -11,7 +11,7 @@ class HomeBalance extends StatelessWidget {
         Text(
           "Umumiy hisob",
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 13.sp,
             fontWeight: FontWeight.w400,
           ),

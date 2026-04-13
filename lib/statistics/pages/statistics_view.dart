@@ -12,14 +12,14 @@ import '../../widgets/custom_navi_bar.dart';
 import '../widgets/category_container.dart';
 
 class StatisticsView extends StatefulWidget {
-  StatisticsView({super.key});
+  const StatisticsView({super.key});
 
   @override
   State<StatisticsView> createState() => _StatisticsViewState();
 }
 
 class _StatisticsViewState extends State<StatisticsView> {
-  int currentIndex = 1;
+  int currentIndex = 3;
   final List items = [
     CategoryContainer(
       title: "Ovqat & Ichimliklar",
@@ -70,58 +70,55 @@ class _StatisticsViewState extends State<StatisticsView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true,
       appBar: SimpleAppBar(title: "Statistikalar"),
-      body: Stack(
-        children: [
-          SingleChildScrollView(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 24.w),
-              child: Column(
-                children: [
-                  MainContainer(
-                    height: 200.h,
-                    width: double.infinity,
-                    text: "UMUMIY XARAJAT",
-                    sum: 4285.5,
-                    color_one: Color(0xff0B0D17),
-                    color_two: Color(0xff0FBC5F),
-                    sizeBox1: 4.h,
-                    sizeBox2: 16.h,
-                  ),
-                  SizedBox(height: 32.h),
-                  BudgetRow(
-                    title: "Xarajatlar tarixi",
-                    buttonTitle: "So'ngi 7 kun",
-                    callback: () {},
-                  ),
-                  SizedBox(height: 16.h),
-                  WeeklyChart(data: fakeData),
-                  SizedBox(height: 32.h),
-                  DailyAverage(),
-                  SizedBox(height: 32.h),
-                  CategoryByWeekMonthYear(),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: NeverScrollableScrollPhysics(),
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      return items[index];
-                    },
-                  ),
-                  SizedBox(height: 120.h),
-                ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 24.w),
+          child: Column(
+            children: [
+              MainContainer(
+                height: 200.h,
+                width: double.infinity,
+                text: "UMUMIY XARAJAT",
+                sum: 4285.5,
+                color_one: Color(0xff0B0D17),
+                color_two: Color(0xff0FBC5F),
+                sizeBox1: 4.h,
+                sizeBox2: 16.h,
               ),
-            ),
+              SizedBox(height: 32.h),
+              BudgetRow(
+                title: "Xarajatlar tarixi",
+                buttonTitle: "So'ngi 7 kun",
+                callback: () {},
+              ),
+              SizedBox(height: 16.h),
+              WeeklyChart(data: fakeData),
+              SizedBox(height: 32.h),
+              DailyAverage(),
+              SizedBox(height: 32.h),
+              CategoryByWeekMonthYear(),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  return items[index];
+                },
+              ),
+              SizedBox(height: 120.h),
+            ],
           ),
-          CustomNavBar(
-            currentIndex: currentIndex,
-            onTap: (index) {
-              setState(() {
-                currentIndex = index;
-              });
-            },
-          ),
-        ],
+        ),
+      ),
+      bottomNavigationBar: CustomNavBar(
+        currentIndex: currentIndex,
+        onTap: (index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
       ),
     );
   }

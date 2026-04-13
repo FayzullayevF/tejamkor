@@ -8,16 +8,15 @@ import 'package:tejamkor/auth/pages/onboarding_view.dart';
 import 'package:tejamkor/auth/pages/sign_up_view.dart';
 import 'package:tejamkor/core/routing/router.dart';
 import 'package:tejamkor/home/home_view.dart';
-import 'package:tejamkor/categories/pages/categories_view.dart';
-import 'package:tejamkor/categories/pages/income_view.dart';
 import 'package:tejamkor/categories/pages/all_categories_view.dart';
 import 'package:tejamkor/home/pages/settings_view.dart';
 import 'package:tejamkor/home/pages/add_transaction_view.dart';
 import 'package:tejamkor/monthly_limit/pages/monthly_limit_view.dart';
 import 'package:tejamkor/statistics/pages/statistics_view.dart';
+import 'package:tejamkor/transaction_history/pages/transaction_history_view.dart';
 
 final router = GoRouter(
-  initialLocation: Routers.statistics,
+  initialLocation: Routers.login,
   routes: [
     GoRoute(path: Routers.onboarding, builder: (_, _) => OnboardingView()),
     GoRoute(path: Routers.login, builder: (_, _) => LoginView()),
@@ -41,20 +40,16 @@ final router = GoRouter(
       path: Routers.categories,
       builder: (_, _) => const AllCategoriesView(),
     ),
-    GoRoute(path: Routers.expense, builder: (_, _) => ExpenseView()),
-    GoRoute(path: Routers.income, builder: (_, _) => IncomeView()),
     GoRoute(path: Routers.settings, builder: (_, _) => SettingsView()),
     GoRoute(
       path: Routers.addTransaction,
       builder: (_, _) => AddTransactionView(),
     ),
+    GoRoute(path: Routers.monthlyLimit, builder: (_, _) => MonthlyLimitView()),
+    GoRoute(path: Routers.statistics, builder: (_, _) => StatisticsView()),
     GoRoute(
-      path: Routers.monthlyLimit,
-      builder: (_, _) => MonthlyLimitView(),
-    ),
-    GoRoute(
-      path: Routers.statistics,
-      builder: (_, _) => StatisticsView(),
+      path: Routers.transactionHistory,
+      builder: (_, _) => TransactionHistoryView(),
     ),
   ],
 );

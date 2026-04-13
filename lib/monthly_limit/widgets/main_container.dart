@@ -14,12 +14,14 @@ class MainContainer extends StatelessWidget {
     required this.color_two,
     required this.sizeBox1,
     required this.sizeBox2,
+    this.onTap,
   });
 
   final double height, width;
   final String text;
   final double sum, sizeBox1, sizeBox2;
   final Color color_one, color_two;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -75,6 +77,7 @@ class MainContainer extends StatelessWidget {
             width: 175.w,
             title: "O'zgartirish uchun bosing",
             image: "assets/icons/pan.svg",
+            onTap: onTap,
           ),
         ],
       ),

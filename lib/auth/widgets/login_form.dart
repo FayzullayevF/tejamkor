@@ -13,10 +13,7 @@ import 'auth_text_field.dart';
 import 'show_error_dialog.dart';
 
 class LoginForm extends StatelessWidget {
-  const LoginForm({
-    super.key,
-    required this.onSuccess,
-  });
+  const LoginForm({super.key, required this.onSuccess});
 
   final VoidCallback onSuccess;
 
@@ -27,9 +24,7 @@ class LoginForm extends StatelessWidget {
 }
 
 class _LoginFormBody extends StatefulWidget {
-  const _LoginFormBody({
-    required this.onSuccess,
-  });
+  const _LoginFormBody({required this.onSuccess});
 
   final VoidCallback onSuccess;
 
@@ -104,9 +99,9 @@ class _LoginFormBodyState extends State<_LoginFormBody> {
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
         if (state.status == LoginStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Login success")),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text("Login success")));
           widget.onSuccess();
           context.go(Routers.categories);
         }
@@ -152,10 +147,7 @@ class _LoginFormBodyState extends State<_LoginFormBody> {
                     await _saveOrClear();
                   },
                 ),
-                Text(
-                  "Eslab qolish",
-                  style: TextStyle(fontSize: 14.sp),
-                ),
+                Text("Eslab qolish", style: TextStyle(fontSize: 14.sp)),
                 const Spacer(),
                 TextButton(
                   onPressed: () {
@@ -170,11 +162,9 @@ class _LoginFormBodyState extends State<_LoginFormBody> {
                         ..shader = LinearGradient(
                           colors: [
                             AppColors.cyanAccent,
-                            AppColors.darkNavy.withOpacity(0.5),
+                            AppColors.darkNavy.withValues(alpha: 0.5),
                           ],
-                        ).createShader(
-                          const Rect.fromLTWH(0, 0, 200, 70),
-                        ),
+                        ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
                     ),
                   ),
                 ),

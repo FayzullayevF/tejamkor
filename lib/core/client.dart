@@ -143,9 +143,31 @@ class ApiClient {
       final list = (response.data as List)
           .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
           .toList();
-      return list.take(20).toList();
+      return list; // Return all to let view filter them
     } else {
       throw Exception('Kategoriyalarni yuklashda xatolik yuz berdi');
+    }
+  }
+
+  Future<List<CategoryModel>> getUserCategories() async {
+    final response = await dio.get('/api/categories/');
+
+    if (response.data is List) {
+      return (response.data as List)
+          .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw Exception('O\'z kategoriyalaringizni yuklashda xatolik');
+    }
+  }
+
+  Future<void> selectDefaultCategories(List<int> categoryIds) async {
+    final response = await dio.post(
+      '/api/categories/select-defaults/',
+      data: {'category_ids': categoryIds},
+    );
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Kategoriyalarni saqlashda xatolik yuz berdi');
     }
   }
 

@@ -1,98 +1,105 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
+import 'package:tejamkor/categories/blocs/category/category_state.dart';
 import 'package:tejamkor/categories/widgets/category_card.dart';
 
-class IncomeView extends StatefulWidget {
-  const IncomeView({super.key, this.onNext});
+class IncomeView extends StatelessWidget {
+  const IncomeView({super.key, required this.selectedIds, required this.onToggle});
 
-  final VoidCallback? onNext;
+  final Set<int> selectedIds;
+  final Function(int) onToggle;
 
-  @override
-  State<IncomeView> createState() => _IncomeViewState();
-}
-
-class _IncomeViewState extends State<IncomeView> {
-  final List<Map<String, dynamic>> incomes = [
-    {"title": "Avans", "icon": SvgPicture.asset("assets/icons/dollar.svg")},
-    {"title": "Ish haqi", "icon": SvgPicture.asset("assets/icons/salary.svg")},
-    {"title": "Keshbek", "icon": SvgPicture.asset("assets/icons/percent.svg")},
-    {"title": "Pensiya", "icon": SvgPicture.asset("assets/icons/pension.svg")},
-    {
-      "title": "Invetitsiya",
-      "icon": SvgPicture.asset("assets/icons/statistic.svg"),
-    },
-    {
-      "title": "O'tkazmalar",
-      "icon": SvgPicture.asset("assets/icons/pilot.svg"),
-    },
-    {
-      "title": "Omonatlar",
-      "icon": SvgPicture.asset("assets/icons/deposit.svg"),
-    },
-    {"title": "Kredit", "icon": SvgPicture.asset("assets/icons/wallet.svg")},
-    {
-      "title": "Qo'shimcha\ndaromad",
-      "icon": SvgPicture.asset("assets/icons/additional.svg"),
-    },
-  ];
-
-  final Set<String> _selectedCards = {};
+  Widget _buildIcon(String iconStr, String categoryName) {
+    if (iconStr.startsWith('http')) {
+      return SvgPicture.network(iconStr);
+    }
+    String path = "wallet.svg";
+    switch (categoryName.toLowerCase()) {
+      case "avans": path = "dollar.svg"; break;
+      case "ish haqi": path = "salary.svg"; break;
+      case "keshbek": path = "percent.svg"; break;
+      case "pensiya": path = "pension.svg"; break;
+      case "invetitsiya":
+      case "investitsiya": path = "statistic.svg"; break;
+      case "amonatlar":
+      case "omonatlar": path = "deposit.svg"; break;
+      case "kredit": path = "wallet.svg"; break;
+      case "qo'shimcha daromad": path = "additional.svg"; break;
+      case "o'tkazmalar": path = "pilot.svg"; break;
+      default: path = "wallet.svg";
+    }
+    return SvgPicture.asset("assets/icons/$path");
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: GridView.builder(
-            padding: EdgeInsets.zero,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: 16.h,
-              crossAxisSpacing: 16.w,
-              childAspectRatio: 1,
-            ),
-            itemCount: incomes.length,
-            itemBuilder: (context, index) {
-              final item = incomes[index];
-              final title = item["title"] as String;
-              return CategoryCard(
-                title: title,
-                icon: item["icon"],
-                isSelected: _selectedCards.contains(title),
-                onTap: () {
-                  setState(() {
-                    if (_selectedCards.contains(title)) {
-                      _selectedCards.remove(title);
-                    } else {
-                      _selectedCards.add(title);
-                    }
-                  });
+    return BlocBuilder<CategoryBloc, CategoryState>(
+      builder: (context, state) {
+        if (state.status == CategoryStatus.loading || state.status == CategoryStatus.idle) {
+          return const Center(child: CircularProgressIndicator(color: Color(0xFF0ED2C9)));
+        }
+
+        if (state.status == CategoryStatus.error) {
+          return Center(child: Text("Xatolik: ${state.errorMessage}"));
+        }
+
+        final incomes = state.categories.where((c) => c.type == 'income').toList();
+
+        if (incomes.isEmpty) {
+          return const Center(child: Text("Hech qanday daromad kategoriyasi yo'q"));
+        }
+
+        return Column(
+          children: [
+            Expanded(
+              child: GridView.builder(
+                padding: EdgeInsets.zero,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisSpacing: 16.h,
+                  crossAxisSpacing: 16.w,
+                  childAspectRatio: 1,
+                ),
+                itemCount: incomes.length,
+                itemBuilder: (context, index) {
+                  final item = incomes[index];
+                  final title = item.name;
+                  return CategoryCard(
+                    title: title,
+                    icon: _buildIcon(item.icon, title),
+                    isSelected: selectedIds.contains(item.id),
+                    onTap: () {
+                      onToggle(item.id);
+                    },
+                  );
                 },
-              );
-            },
-          ),
-        ),
-        SizedBox(height: 16.h),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
-          decoration: BoxDecoration(
-            color: const Color(0xffDFF9FA),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: Text(
-            "Keyinchalik sozlamalarda kategoriyalarni\ntahrirlash va yangilarini qo'shishingiz mumkin",
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 12,
-              fontWeight: FontWeight.w400,
-              height: 1.4,
+              ),
             ),
-          ),
-        ),
-      ],
+            SizedBox(height: 16.h),
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 16.h),
+              decoration: BoxDecoration(
+                color: const Color(0xffDFF9FA),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: Text(
+                "Keyinchalik sozlamalarda kategoriyalarni\ntahrirlash va yangilarini qo'shishingiz mumkin",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  height: 1.4,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

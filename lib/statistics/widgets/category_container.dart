@@ -11,7 +11,10 @@ class CategoryContainer extends StatelessWidget {
     required this.icon,
     required this.amount,
     required this.percent,
-    required this.progress, required this.containerColor, required this.sliderColor, required this.percentColor,
+    required this.progress,
+    required this.containerColor,
+    required this.sliderColor,
+    required this.percentColor,
   });
 
   final String title;
@@ -20,7 +23,7 @@ class CategoryContainer extends StatelessWidget {
   final double amount;
   final double percent;
   final double progress; // 0 → 1
-  final Color containerColor,sliderColor,percentColor;
+  final Color containerColor, sliderColor, percentColor;
 
   @override
   Widget build(BuildContext context) {
@@ -34,12 +37,7 @@ class CategoryContainer extends StatelessWidget {
         ? Colors.green
         : Colors.grey;
 
-    // 🔥 icon logikasi
-    final percentIcon = isPositive
-        ? Icons.arrow_upward
-        : isNegative
-        ? Icons.arrow_downward
-        : Icons.remove;
+    final percentPrefix = isPositive ? "+" : "";
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -48,111 +46,107 @@ class CategoryContainer extends StatelessWidget {
         color: Colors.white,
         borderRadius: BorderRadius.circular(24),
       ),
-      child: Column(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Row(
-            children: [
-              Container(
-                height: 48.w,
-                width: 48.w,
-                decoration: BoxDecoration(
-                  color: containerColor.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    icon,
-                    height: 22,
-                  ),
-                ),
-              ),
-
-              SizedBox(width: 12.w),
-
-              // 🔤 TITLE + SUBTITLE
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 16.sp,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 💰 AMOUNT + %
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    "\$${NumberFormat('#,###.00').format(amount)}",
-                    style: TextStyle(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Row(
-                    children: [
-                      Icon(
-                        percentIcon,
-                        size: 14,
-                        color: percentColor,
-                      ),
-                      SizedBox(width: 2.w),
-                      Text(
-                        "${percent.abs()}%",
-                        style: TextStyle(
-                          fontSize: 10.sp,
-                          fontWeight: FontWeight.w700,
-                          color: percentColor,
-                        ),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ],
+          Container(
+            height: 48.w,
+            width: 48.w,
+            decoration: BoxDecoration(
+              color: containerColor.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Center(child: SvgPicture.asset(icon, height: 22)),
           ),
 
-          SizedBox(height: 10.h),
+          SizedBox(width: 12.w),
 
-          // 🔥 PROGRESS BAR
-          ClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Stack(
+          // Right Side: Details + Progress
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // background
-                    Container(
-                      height: 6.h,
-                      width: double.infinity,
-                      color: const Color(0xffE5E9EA),
+                    // 🔤 TITLE + SUBTITLE
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            title,
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          Text(
+                            subtitle,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
 
-                    // progress
-                    Container(
-                      height: 6.h,
-                      width: constraints.maxWidth * progress,
-                      color: sliderColor,
+                    // 💰 AMOUNT + %
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          "\$${NumberFormat('#,###.00').format(amount)}",
+                          style: TextStyle(
+                            fontSize: 16.sp,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        SizedBox(height: 4.h),
+                        Text(
+                          "$percentPrefix$percent%",
+                          style: TextStyle(
+                            fontSize: 10.sp,
+                            fontWeight: FontWeight.w700,
+                            color: percentColor,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
-                );
-              },
+                ),
+
+                SizedBox(height: 10.h),
+
+                // 🔥 PROGRESS BAR
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Stack(
+                        children: [
+                          // background
+                          Container(
+                            height: 6.h,
+                            width: double.infinity,
+                            color: const Color(0xffE5E9EA),
+                          ),
+
+                          // progress
+                          Container(
+                            height: 6.h,
+                            width: constraints.maxWidth * progress,
+                            color: sliderColor,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
         ],

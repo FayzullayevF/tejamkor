@@ -17,35 +17,35 @@ class CurrencyRatesCard extends StatelessWidget {
         children: [
           Text(
             "Valyuta kurslari",
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16.sp),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
           ),
-          SizedBox(height: 16.h),
+          SizedBox(height: 10.h),
           _buildCurrencyListItem(
             "assets/icons/rus_flag.svg",
             "Rossiya rubli",
             "RUB to UZS",
             "153.08 UZS",
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 5.h),
           _buildCurrencyListItem(
             "assets/icons/usa_flag.svg",
             "AQSH Dollari",
             "USD to UZS",
             "12 102.39 UZS",
           ),
-          SizedBox(height: 12.h),
+          SizedBox(height: 5.h),
           _buildCurrencyListItem(
             "assets/icons/euro_flag.svg",
             "Yevro",
             "EUR to UZS",
             "13 990.36 UZS",
           ),
-          SizedBox(height: 20.h),
+          SizedBox(height: 10.h),
           Text(
             "Valyuta qo'shish +",
             style: TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 12.sp,
+              fontWeight: FontWeight.w500,
+              fontSize: 16,
               color: Colors.black,
             ),
           ),
@@ -71,8 +71,8 @@ class CurrencyRatesCard extends StatelessWidget {
           ClipOval(
             child: SvgPicture.asset(
               flagPath,
-              width: 28.w,
-              height: 28.w,
+              width: 50.w,
+              height: 49.w,
               fit: BoxFit.cover,
             ),
           ),
@@ -83,16 +83,13 @@ class CurrencyRatesCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12.sp,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
                 ),
                 Text(
                   subTitle,
                   style: TextStyle(
                     fontWeight: FontWeight.w400,
-                    fontSize: 10.sp,
+                    fontSize: 12,
                     color: Colors.grey,
                   ),
                 ),
@@ -101,7 +98,7 @@ class CurrencyRatesCard extends StatelessWidget {
           ),
           Text(
             rate,
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.sp),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
           ),
         ],
       ),

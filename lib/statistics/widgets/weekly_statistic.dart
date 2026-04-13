@@ -30,38 +30,44 @@ class WeeklyChart extends StatelessWidget {
           final e = data[index];
 
           final percent = e.value / maxValue;
+          final activeColor = index % 2 == 0 ? activeColor1 : activeColor2;
 
-          final activeHeight = 100.h * percent;
-          final inactiveHeight = 100.h * (1 - percent);
+          return Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                // 🔥 BAR
+                SizedBox(
+                  height: 100.h,
+                  child: Stack(
+                    alignment: Alignment.bottomCenter,
+                    children: [
+                      // Inactive (background shape)
+                      Container(
+                        height: 100.h, // same maximum height for all backgrounds to create uniform wavy look
+                        decoration: BoxDecoration(
+                          color: bgColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(50),
+                            topRight: Radius.circular(50),
+                          ),
+                        ),
+                      ),
 
-          final activeColor =
-          index % 2 == 0 ? activeColor1 : activeColor2;
-
-          return Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              // 🔥 BAR
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    // inactive (yuqori qism)
-                    Container(
-                      height: inactiveHeight,
-                      width: 26.w,
-                      color: bgColor,
-                    ),
-
-                    // active (pastki qism)
-                    Container(
-                      height: activeHeight,
-                      width: 26.w,
-                      color: activeColor,
-                    ),
-                  ],
+                      // Active (foreground shape)
+                      Container(
+                        height: 100.h * percent,
+                        decoration: BoxDecoration(
+                          color: activeColor,
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(50),
+                            topRight: Radius.circular(50),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
               SizedBox(height: 8.h),
 
@@ -75,7 +81,7 @@ class WeeklyChart extends StatelessWidget {
                 ),
               ),
             ],
-          );
+          ));
         }),
       ),
     );

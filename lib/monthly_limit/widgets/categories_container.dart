@@ -3,30 +3,33 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
-class CategoriesContainer extends StatefulWidget {
+class CategoriesContainer extends StatelessWidget {
   const CategoriesContainer({
     super.key,
     required this.height,
-    required this.image,
+    required this.icon,
     required this.title,
     required this.subtitle,
+    required this.value,
+    required this.maxLimit,
+    required this.onChanged,
   });
 
   final double height;
-  final String image;
+  final Widget icon;
   final String title, subtitle;
-
-  @override
-  State<CategoriesContainer> createState() => _CategoriesContainerState();
-}
-
-class _CategoriesContainerState extends State<CategoriesContainer> {
-  double value = 1200;
+  final double value;
+  final double maxLimit;
+  final ValueChanged<double>? onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final double safeMax = maxLimit < value ? value : maxLimit;
+    final double sliderMax = safeMax <= 0 ? 1.0 : safeMax;
+    final bool isDisabled = maxLimit <= 0 && value <= 0;
+
     return Container(
-      height: widget.height,
+      height: height,
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
       decoration: BoxDecoration(
@@ -36,27 +39,25 @@ class _CategoriesContainerState extends State<CategoriesContainer> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-
           /// 🔹 TOP QISM
           Row(
             children: [
-              SvgPicture.asset(widget.image, width: 40, height: 40),
+              SizedBox(width: 40, height: 40, child: icon),
               SizedBox(width: 12.w),
-
               /// TEXTLAR
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      widget.title,
+                      title,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     Text(
-                      widget.subtitle,
+                      subtitle,
                       style: TextStyle(
                         fontSize: 12,
                         color: Color(0xff3E494B),
@@ -78,15 +79,11 @@ class _CategoriesContainerState extends State<CategoriesContainer> {
           Slider(
             thumbColor: Color(0xff006673),
             inactiveColor: Color(0xffE5E9EA),
-            value: value,
+            value: value.clamp(0.0, sliderMax),
             min: 0,
-            max: 5000, // max limit
+            max: sliderMax,
             activeColor: Colors.teal,
-            onChanged: (newValue) {
-              setState(() {
-                value = newValue;
-              });
-            },
+            onChanged: isDisabled ? null : onChanged,
           ),
         ],
       ),
