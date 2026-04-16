@@ -41,7 +41,9 @@ class _LoginViewState extends State<LoginView> {
             : RegisterForm(
           key:  ValueKey('register'),
           onSubmit: _submitRegister,
-          onSuccess: _goToLogin,
+          onSuccess: () {
+            context.go(Routers.categories);
+          },
         ),
       ),
     );

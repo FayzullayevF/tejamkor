@@ -13,6 +13,7 @@ class CategoriesContainer extends StatelessWidget {
     required this.value,
     required this.maxLimit,
     required this.onChanged,
+    this.currencySymbol = '\$',
   });
 
   final double height;
@@ -20,6 +21,7 @@ class CategoriesContainer extends StatelessWidget {
   final String title, subtitle;
   final double value;
   final double maxLimit;
+  final String currencySymbol;
   final ValueChanged<double>? onChanged;
 
   @override
@@ -67,7 +69,7 @@ class CategoriesContainer extends StatelessWidget {
                 ),
               ),
               Text(
-                "\$${NumberFormat('#,###').format(value)}",
+                "$currencySymbol${NumberFormat('#,###').format(value)}",
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

@@ -13,9 +13,6 @@ class IncomeView extends StatelessWidget {
   final Function(int) onToggle;
 
   Widget _buildIcon(String iconStr, String categoryName) {
-    if (iconStr.startsWith('http')) {
-      return SvgPicture.network(iconStr);
-    }
     String path = "wallet.svg";
     switch (categoryName.toLowerCase()) {
       case "avans": path = "dollar.svg"; break;
@@ -46,7 +43,7 @@ class IncomeView extends StatelessWidget {
           return Center(child: Text("Xatolik: ${state.errorMessage}"));
         }
 
-        final incomes = state.categories.where((c) => c.type == 'income').toList();
+        final incomes = state.categories.where((c) => c.type == 'income').take(20).toList();
 
         if (incomes.isEmpty) {
           return const Center(child: Text("Hech qanday daromad kategoriyasi yo'q"));

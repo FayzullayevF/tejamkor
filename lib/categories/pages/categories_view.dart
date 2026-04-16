@@ -16,9 +16,6 @@ class ExpenseView extends StatelessWidget {
   // Lekin sizda chiroyli qilingan o'zingizni SVG fayllaringiz (assets/icons/...) papkasida yotibdi.
   // Shuning uchun API ni ismidan ushlab, uni sizning local SVG faylingizga to'g'irlab olamiz.
   Widget _buildIcon(String iconStr, String categoryName) {
-    if (iconStr.startsWith('http')) {
-      return SvgPicture.network(iconStr);
-    }
 
     String path = "car.svg"; // Default fallback (topolmasa shu chiqadi)
 
@@ -117,7 +114,7 @@ class ExpenseView extends StatelessWidget {
           return Center(child: Text("Xatolik: ${state.errorMessage}"));
         }
 
-        final expenses = state.categories.where((c) => c.type == 'expense').toList();
+        final expenses = state.categories.where((c) => c.type == 'expense').take(20).toList();
 
         if (expenses.isEmpty) {
           return const Center(child: Text("Hech qanday xarajat kategoriyasi yo'q"));

@@ -5,12 +5,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/utils/app_colors.dart';
 
 class LimitButton extends StatelessWidget {
-  const LimitButton({super.key});
+  final VoidCallback onTap;
+  const LimitButton({super.key, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         height: 64.h,

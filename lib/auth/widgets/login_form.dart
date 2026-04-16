@@ -99,11 +99,7 @@ class _LoginFormBodyState extends State<_LoginFormBody> {
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
         if (state.status == LoginStatus.success) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text("Login success")));
           widget.onSuccess();
-          context.go(Routers.categories);
         }
 
         if (state.status == LoginStatus.error) {

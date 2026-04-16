@@ -14,12 +14,14 @@ class MainContainer extends StatelessWidget {
     required this.color_two,
     required this.sizeBox1,
     required this.sizeBox2,
+    this.currencySymbol = '\$',
     this.onTap,
   });
 
   final double height, width;
   final String text;
   final double sum, sizeBox1, sizeBox2;
+  final String currencySymbol;
   final Color color_one, color_two;
   final VoidCallback? onTap;
 
@@ -53,7 +55,7 @@ class MainContainer extends StatelessWidget {
           Row(
             children: [
               Text(
-                "\$",
+                currencySymbol,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w700,

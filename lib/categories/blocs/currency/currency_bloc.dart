@@ -40,7 +40,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
       await _repository.updateUserCurrency(event.currencyId);
       emit(state.copyWith(status: CurrencyStatus.updated));
       // Option: refetch the currency logic
-      // add(CurrencyFetched());
+      add(CurrencyFetched());
     } catch (e) {
       emit(state.copyWith(
         status: CurrencyStatus.error,

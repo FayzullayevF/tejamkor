@@ -74,10 +74,6 @@ class _RegisterFormBodyState extends State<_RegisterFormBody> {
     return BlocListener<SignUpBloc, SignUpState>(
       listener: (context, state) {
         if (state.status == SignUpStatus.success) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Ro'yxatdan o'tish muvaffaqiyatli")),
-          );
-
           widget.onSuccess();
         }
 

@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
+import 'package:tejamkor/core/routing/router.dart';
+import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
+import 'package:tejamkor/core/routing/router.dart';
+import '../../monthly_limit/widgets/edit_limit_dialog.dart';
+import '../widgets/custom_date_dialog.dart';
+import '../widgets/custom_note_dialog.dart';
 
 class AddTransactionView extends StatefulWidget {
   const AddTransactionView({super.key});
@@ -19,6 +27,9 @@ class _CategoryItem {
 
 class _AddTransactionViewState extends State<AddTransactionView> {
   int _selectedIndex = 2; // Default to 'Salomallik' as in the design
+  double _amount = 0.0;
+  DateTime _selectedDate = DateTime.now();
+  String _note = "Add note";
 
   final List<_CategoryItem> _categories = [
     _CategoryItem("assets/icons/new_car.svg", "Taksi"),
@@ -38,6 +49,10 @@ class _AddTransactionViewState extends State<AddTransactionView> {
         : const Color(0xFF7C7777);
     final Color cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
 
+    final currencyState = context.watch<CurrencyBloc>().state;
+    final currencySymbol =
+        currencyState.response?.currencyDetail?.symbol ?? '\$';
+
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xffF3F3F3),
       body: SafeArea(
@@ -53,7 +68,7 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                 Row(
                   children: [
                     GestureDetector(
-                      onTap: () => context.pop(),
+                      onTap: () => context.go(Routers.home),
                       child: Icon(
                         Icons.arrow_back_ios_new_rounded,
                         color: textColor,
@@ -73,25 +88,40 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                 ),
                 SizedBox(height: 32.h),
                 Center(
-                  child: Text(
-                    "Mablag'ni kiriting",
-                    style: TextStyle(
-                      color: Color(0xff3E494B),
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w500,
+                  child: GestureDetector(
+                    onTap: () async {
+                      final newAmount = await showDialog<double>(
+                        context: context,
+                        builder: (context) => EditLimitDialog(
+                          currentLimit: _amount,
+                          currencySymbol: currencySymbol,
+                        ),
+                      );
+                      if (newAmount != null) {
+                        setState(() {
+                          _amount = newAmount;
+                        });
+                      }
+                    },
+                    child: Text(
+                      "Mablag'ni kiriting",
+                      style: TextStyle(
+                        color: Color(0xff3E494B),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
                 SizedBox(height: 8.h),
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(left: 30.w, bottom: 6.h),
-
+                      padding: EdgeInsets.only(bottom: 6.h),
                       child: Text(
-                        "UZS",
+                        currencySymbol,
                         style: TextStyle(
                           color: const Color(0xFF006673),
                           fontSize: 30,
@@ -99,9 +129,9 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                         ),
                       ),
                     ),
-                    SizedBox(width: 30.w),
+                    SizedBox(width: 8.w),
                     Text(
-                      "400 285",
+                      _amount.toStringAsFixed(0),
                       style: TextStyle(
                         color: textColor,
                         fontSize: 48,
@@ -115,24 +145,58 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildInfoCard(
-                        icon: "assets/icons/new_calendar.svg",
-                        title: "SANA",
-                        subtitle: "Bugun",
-                        cardColor: cardColor,
-                        textColor: textColor,
-                        subtitleColor: subtitleColor,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final date = await showDialog<DateTime>(
+                            context: context,
+                            builder: (context) =>
+                                CustomDateDialog(initialDate: _selectedDate),
+                          );
+                          if (date != null) {
+                            setState(() {
+                              _selectedDate = date;
+                            });
+                          }
+                        },
+                        child: _buildInfoCard(
+                          icon: "assets/icons/new_calendar.svg",
+                          title: "SANA",
+                          subtitle: DateFormat(
+                            'MMM dd, yyyy',
+                          ).format(_selectedDate),
+                          cardColor: cardColor,
+                          textColor: textColor,
+                          subtitleColor: subtitleColor,
+                        ),
                       ),
                     ),
                     SizedBox(width: 16.w),
                     Expanded(
-                      child: _buildInfoCard(
-                        icon: "assets/icons/new_data.svg",
-                        title: "NOTE",
-                        subtitle: "Add note",
-                        cardColor: cardColor,
-                        textColor: textColor,
-                        subtitleColor: subtitleColor,
+                      child: GestureDetector(
+                        onTap: () async {
+                          final noteResult = await showDialog<String>(
+                            context: context,
+                            builder: (context) =>
+                                CustomNoteDialog(initialNote: _note),
+                          );
+                          if (noteResult != null && noteResult.isNotEmpty) {
+                            setState(() {
+                              _note = noteResult;
+                            });
+                          }
+                        },
+                        child: _buildInfoCard(
+                          icon: "assets/icons/new_data.svg",
+                          title: "NOTE",
+                          subtitle: _note.isEmpty
+                              ? "Add note"
+                              : (_note.length > 10
+                                    ? '${_note.substring(0, 10)}...'
+                                    : _note),
+                          cardColor: cardColor,
+                          textColor: textColor,
+                          subtitleColor: subtitleColor,
+                        ),
                       ),
                     ),
                   ],
@@ -163,8 +227,6 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                   ],
                 ),
                 SizedBox(height: 20.h),
-
-                // Categories Grid
                 Wrap(
                   spacing: 16.w,
                   runSpacing: 16.h,
@@ -183,8 +245,6 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                   }),
                 ),
                 SizedBox(height: 32.h),
-
-                // Wallet selector
                 Container(
                   padding: EdgeInsets.symmetric(
                     horizontal: 20.w,
@@ -252,13 +312,17 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                     // Save action
                   },
                   child: Container(
-                    height: 60.h,
+                    height: 68.h,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(30.r),
+                      borderRadius: BorderRadius.circular(9999),
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF0ED2C9), Color(0xFF06474E)],
+                        colors: [
+                          Color.fromARGB(255, 38, 187, 210),
+                          Color.fromARGB(255, 17, 28, 44),
+                        ],
                         begin: Alignment.centerLeft,
                         end: Alignment.centerRight,
+                        // stops: [0.3, 1],
                       ),
                       boxShadow: [
                         BoxShadow(
@@ -273,8 +337,8 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                         "Tranzaktsiyani saqlash",
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -359,7 +423,6 @@ class _AddTransactionViewState extends State<AddTransactionView> {
     required Color textColor,
     required VoidCallback onTap,
   }) {
-    // 3 columns with 16.w spacing between. (Total width - default paddings) / 3
     final screenWidth = MediaQuery.of(context).size.width;
     final paddingWidth = 48.w; // 24 * 2
     final spacingWidth = 32.w; // 16 * 2
@@ -372,7 +435,7 @@ class _AddTransactionViewState extends State<AddTransactionView> {
         width: cardWidth,
         padding: EdgeInsets.symmetric(vertical: 24.h),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF058F9D) : cardColor,
+          color: isSelected ? const Color(0xFF006673) : cardColor,
           borderRadius: BorderRadius.circular(24.r),
           boxShadow: isSelected
               ? [

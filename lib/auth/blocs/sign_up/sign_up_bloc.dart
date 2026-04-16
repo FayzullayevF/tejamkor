@@ -28,6 +28,10 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         password: passwordController.text.trim(),
       );
       if (store) {
+        await _repo.login(
+          login: emailController.text.trim(),
+          password: passwordController.text.trim(),
+        );
         emit(state.copyWith(status: SignUpStatus.success));
       } else {
         emit(state.copyWith(status: SignUpStatus.error,errorMessage: "Ro'yxatdan o'tish kutilmaganda to'xtatildi. Qayta urinib ko'ring."));

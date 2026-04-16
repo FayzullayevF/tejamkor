@@ -6,7 +6,8 @@ import 'package:tejamkor/core/utils/app_colors.dart';
 class EditLimitDialog extends StatefulWidget {
   final double currentLimit;
   final ValueChanged<double>? onSaved;
-  const EditLimitDialog({super.key, required this.currentLimit, this.onSaved});
+  final String currencySymbol;
+  const EditLimitDialog({super.key, required this.currentLimit, this.onSaved, this.currencySymbol = '\$'});
 
   @override
   State<EditLimitDialog> createState() => _EditLimitDialogState();
@@ -143,7 +144,7 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
               Padding(
                 padding: EdgeInsets.only(bottom: 2.h),
                 child: Text(
-                  "\$ ",
+                  "${widget.currencySymbol} ",
                   style: TextStyle(
                     color: AppColors.darkNavy.withOpacity(0.6),
                     fontSize: 20,

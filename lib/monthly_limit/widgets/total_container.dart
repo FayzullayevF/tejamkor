@@ -3,10 +3,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
 class TotalContainer extends StatelessWidget {
-  const TotalContainer({super.key, required this.allocated, required this.remaining});
+  const TotalContainer({super.key, required this.allocated, required this.remaining, this.currencySymbol = '\$'});
 
   final double allocated;
   final double remaining;
+  final String currencySymbol;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +37,7 @@ class TotalContainer extends StatelessWidget {
                 ),
                 SizedBox(height: 5.h),
                 Text(
-                  "\$${NumberFormat('#,###.00', 'en_US').format(allocated)}",
+                  "$currencySymbol${NumberFormat('#,###.00', 'en_US').format(allocated)}",
                   style: TextStyle(
                     color: Color(0xff006673),
                     fontWeight: FontWeight.w700,
@@ -59,7 +60,7 @@ class TotalContainer extends StatelessWidget {
                 ),
                 SizedBox(height: 5.h),
                 Text(
-                  "\$${NumberFormat('#,###.00', 'en_US').format(remaining)}",
+                  "$currencySymbol${NumberFormat('#,###.00', 'en_US').format(remaining)}",
                   style: TextStyle(
                     color: Color(0xff006673),
                     fontWeight: FontWeight.w700,
