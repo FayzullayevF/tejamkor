@@ -11,15 +11,8 @@ class ExpenseView extends StatelessWidget {
 
   final Set<int> selectedIds;
   final Function(int) onToggle;
-
-  // API faqat FontAwesome class nomlarini (fa-utensils) jo'natyapti.
-  // Lekin sizda chiroyli qilingan o'zingizni SVG fayllaringiz (assets/icons/...) papkasida yotibdi.
-  // Shuning uchun API ni ismidan ushlab, uni sizning local SVG faylingizga to'g'irlab olamiz.
   Widget _buildIcon(String iconStr, String categoryName) {
-
-    String path = "car.svg"; // Default fallback (topolmasa shu chiqadi)
-
-    // Backenddagi ismlar -> Sizdagi fayllar xaritasi
+    String path = "car.svg";
     switch (categoryName.toLowerCase()) {
       case "oziq-ovqat":
       case "oziq ovqat":
@@ -97,8 +90,6 @@ class ExpenseView extends StatelessWidget {
         // Nom topilmasa terminalni qizartirmaslik uchun aniq mavjud bo'lgan "basket.svg" ni qaytaramiz
         path = "basket.svg";
     }
-
-    // Biz uni assets/icons/ papkangizdan qidiramiz
     return SvgPicture.asset("assets/icons/$path");
   }
 

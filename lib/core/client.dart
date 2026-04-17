@@ -9,9 +9,13 @@ import 'package:tejamkor/core/data/models/auth/forgot_password_verify.dart';
 import 'package:tejamkor/core/data/models/auth/login_model.dart';
 import 'package:tejamkor/core/interceptor.dart';
 
+import 'api_constans.dart';
+import 'data/models/transactions/post_transactions.dart';
+
 class ApiClient {
   final Dio dio = Dio(BaseOptions(baseUrl: "https://www.tejamkor-ai.uz"))
     ..interceptors.add(AuthInterceptor());
+
 
   static const String _registerPath = '/api/users/register/';
   static const String _loginPath = '/api/users/login/';
@@ -188,6 +192,41 @@ class ApiClient {
     );
     if (response.statusCode != 200) {
       throw Exception('Valyutani o\'zgartirishda xatolik yuz berdi');
+    }
+  }
+  Future<TransactionModel> createTransaction(TransactionModel transaction) async {
+    try {
+      final response = await dio.post(
+        ApiConstants.transactions,
+        data: transaction.toJson(),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return TransactionModel.fromJson(response.data);
+      } else {
+        throw Exception('Failed to create transaction: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+  String _handleDioError(DioException error) {
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'Connection timeout. Please check your internet connection.';
+      case DioExceptionType.sendTimeout:
+        return 'Send timeout. Please try again.';
+      case DioExceptionType.receiveTimeout:
+        return 'Receive timeout. Please try again.';
+      case DioExceptionType.badResponse:
+        if (error.response?.data != null) {
+          return 'Server error: ${error.response?.data}';
+        }
+        return 'Server error: ${error.response?.statusCode}';
+      case DioExceptionType.cancel:
+        return 'Request cancelled.';
+      default:
+        return 'Network error: ${error.message}';
     }
   }
 }

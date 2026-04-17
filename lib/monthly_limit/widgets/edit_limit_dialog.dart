@@ -7,7 +7,15 @@ class EditLimitDialog extends StatefulWidget {
   final double currentLimit;
   final ValueChanged<double>? onSaved;
   final String currencySymbol;
-  const EditLimitDialog({super.key, required this.currentLimit, this.onSaved, this.currencySymbol = '\$'});
+  final double maxLimit; // Add max limit parameter
+
+  const EditLimitDialog({
+    super.key,
+    required this.currentLimit,
+    this.onSaved,
+    this.currencySymbol = '\$',
+    this.maxLimit = 100000000, // Default max limit 100,000,000
+  });
 
   @override
   State<EditLimitDialog> createState() => _EditLimitDialogState();
@@ -15,6 +23,7 @@ class EditLimitDialog extends StatefulWidget {
 
 class _EditLimitDialogState extends State<EditLimitDialog> {
   String _amountStr = '';
+  String _errorMessage = ''; // Add error message state
 
   @override
   void initState() {
@@ -30,6 +39,8 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
 
   void _onKeyPress(String key) {
     setState(() {
+      _errorMessage = ''; // Clear error on new input
+
       if (key == '<') {
         if (_amountStr.isNotEmpty) {
           _amountStr = _amountStr.substring(0, _amountStr.length - 1);
@@ -40,28 +51,59 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
         }
       } else {
         if (_amountStr.contains('.')) {
-           List<String> parts = _amountStr.split('.');
-           if (parts.length > 1 && parts[1].length >= 2) return;
+          List<String> parts = _amountStr.split('.');
+          if (parts.length > 1 && parts[1].length >= 2) return;
         }
+
+        // Check length limit
         if (_amountStr.length < 10) {
           if (_amountStr == '0' && key == '0') return;
           if (_amountStr == '0' && key != '0') {
-             _amountStr = key;
-             return;
+            _amountStr = key;
+          } else {
+            _amountStr += key;
           }
-          _amountStr += key;
         }
       }
+
+      // Validate after each input
+      _validateAmount();
     });
+  }
+
+  // Add validation method
+  void _validateAmount() {
+    if (_amountStr.isEmpty) {
+      _errorMessage = '';
+      return;
+    }
+
+    final val = double.tryParse(_amountStr) ?? 0.0;
+
+    if (val > widget.maxLimit) {
+      _errorMessage = 'Maksimal summa ${_formatNumber(widget.maxLimit)} so‘m bo‘lishi mumkin';
+    } else if (val < 0) {
+      _errorMessage = 'Summa 0 dan katta bo‘lishi kerak';
+    } else {
+      _errorMessage = '';
+    }
+  }
+
+  // Helper method to format number
+  String _formatNumber(double number) {
+    final formatter = NumberFormat('#,###', 'en_US');
+    return formatter.format(number.toInt());
   }
 
   String _getFormattedAmount() {
     if (_amountStr.isEmpty) return "0.00";
-    
+
     List<String> parts = _amountStr.split('.');
     String whole = parts[0];
+
+    // Format with thousand separators
     String formattedWhole = whole.isEmpty ? "0" : NumberFormat('#,###', 'en_US').format(int.parse(whole));
-    
+
     if (parts.length > 1) {
       return "$formattedWhole.${parts[1]}";
     } else {
@@ -107,7 +149,35 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
             ),
             SizedBox(height: 24.h),
             _buildAmountContainer(),
-            SizedBox(height: 24.h),
+
+            // Add error message display
+            if (_errorMessage.isNotEmpty)
+              Padding(
+                padding: EdgeInsets.only(top: 8.h),
+                child: Text(
+                  _errorMessage,
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+            // Add max limit info
+            Padding(
+              padding: EdgeInsets.only(top: 8.h),
+              child: Text(
+                "Maksimal summa: ${_formatNumber(widget.maxLimit)} so‘m",
+                style: TextStyle(
+                  color: Colors.grey,
+                  fontSize: 11.sp,
+                ),
+              ),
+            ),
+
+            SizedBox(height: 16.h),
             _buildNumpad(),
             SizedBox(height: 24.h),
             _buildActionButtons(context),
@@ -118,6 +188,12 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
   }
 
   Widget _buildAmountContainer() {
+    // Determine text color based on validation
+    Color amountColor = AppColors.darkNavy;
+    if (_errorMessage.isNotEmpty) {
+      amountColor = Colors.red;
+    }
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(vertical: 20.h),
@@ -146,7 +222,7 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
                 child: Text(
                   "${widget.currencySymbol} ",
                   style: TextStyle(
-                    color: AppColors.darkNavy.withOpacity(0.6),
+                    color: amountColor.withOpacity(0.6),
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
@@ -155,7 +231,7 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
               Text(
                 _getFormattedAmount(),
                 style: TextStyle(
-                  color: AppColors.darkNavy,
+                  color: amountColor,
                   fontSize: 36,
                   fontWeight: FontWeight.w700,
                 ),
@@ -232,42 +308,61 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
           child: isIcon
               ? Icon(Icons.backspace_outlined, color: AppColors.darkNavy, size: 26.sp)
               : Text(
-                  label,
-                  style: TextStyle(
-                    color: AppColors.darkNavy,
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+            label,
+            style: TextStyle(
+              color: AppColors.darkNavy,
+              fontSize: 24,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
     );
   }
 
   Widget _buildActionButtons(BuildContext context) {
+    // Check if amount is valid
+    bool isValid = true;
+    double amount = 0.0;
+
+    if (_amountStr.isNotEmpty) {
+      amount = double.tryParse(_amountStr) ?? 0.0;
+      if (amount > widget.maxLimit || amount < 0) {
+        isValid = false;
+      }
+    } else if (_amountStr.isEmpty) {
+      isValid = true; // 0 is valid
+    }
+
     return Column(
       children: [
         InkWell(
-          onTap: () {
-            if (_amountStr.isNotEmpty) {
-              final val = double.tryParse(_amountStr) ?? 0.0;
-              if (widget.onSaved != null) {
-                widget.onSaved!(val);
-              }
-              Navigator.pop(context, val);
-            } else {
-              if (widget.onSaved != null) {
-                widget.onSaved!(0.0);
-              }
-              Navigator.pop(context, 0.0);
+          onTap: isValid ? () {
+            final val = _amountStr.isEmpty ? 0.0 : (double.tryParse(_amountStr) ?? 0.0);
+
+            // Final validation before saving
+            if (val > widget.maxLimit) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Summa ${_formatNumber(widget.maxLimit)} so‘mdan oshmasligi kerak'),
+                  backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 2),
+                ),
+              );
+              return;
             }
-          },
+
+            if (widget.onSaved != null) {
+              widget.onSaved!(val);
+            }
+            Navigator.pop(context, val);
+          } : null,
           borderRadius: BorderRadius.circular(28),
           child: Container(
             width: double.infinity,
             height: 56.h,
             decoration: BoxDecoration(
-              color: Color(0xFF007A8A), // Solid teal
+              color: isValid ? const Color(0xFF007A8A) : Colors.grey,
               borderRadius: BorderRadius.circular(28),
             ),
             alignment: Alignment.center,

@@ -11,7 +11,7 @@ class CategoryCard extends StatelessWidget {
   });
 
   final String title;
-  final dynamic icon; // <-- Allows both Object(SvgPicture) and IconData
+  final dynamic icon;
   final bool isSelected;
   final VoidCallback? onTap;
 

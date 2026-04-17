@@ -114,7 +114,7 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
                   });
                 },
                 children: [
-                  const CategoriesView(), // This is the generic view, wait what is CategoriesView in this context?
+                   CategoriesView(), // This is the generic view, wait what is CategoriesView in this context?
                   ExpenseView(selectedIds: _selectedIds, onToggle: _toggleSelection),
                   IncomeView(selectedIds: _selectedIds, onToggle: _toggleSelection),
                 ],

@@ -28,6 +28,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   provider: ^6.1.5+1
   intl: ^0.20.2
+  equatable: ^2.0.8
 
 dev_dependencies:
   flutter_test:
