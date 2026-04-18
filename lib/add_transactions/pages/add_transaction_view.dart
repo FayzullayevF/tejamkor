@@ -12,6 +12,9 @@ import '../../../home/widgets/custom_note_dialog.dart';
 import '../blocs/add_transactions_bloc.dart';
 import '../blocs/add_transactions_event.dart';
 import '../blocs/add_transactions_state.dart';
+import '../../../categories/data/models/category_model.dart';
+import '../../../categories/data/repositories/category_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddTransactionView extends StatefulWidget {
   const AddTransactionView({super.key});
@@ -20,30 +23,121 @@ class AddTransactionView extends StatefulWidget {
   State<AddTransactionView> createState() => _AddTransactionViewState();
 }
 
-class _CategoryItem {
-  final String icon;
+class _WalletModel {
+  final int id;
   final String name;
-  final int categoryId;
+  final double balance;
+  final String code;
+  final String icon;
 
-  _CategoryItem(this.icon, this.name, this.categoryId);
+  _WalletModel(this.id, this.name, this.balance, this.code, this.icon);
+
+  _WalletModel copyWith({double? balance}) {
+    return _WalletModel(id, name, balance ?? this.balance, code, icon);
+  }
 }
 
 class _AddTransactionViewState extends State<AddTransactionView> {
-  int _selectedIndex = 2;
+  int _selectedIndex = 0;
   double _amount = 0.0;
   DateTime _selectedDate = DateTime.now();
   String _note = "Add note";
   String _transactionType = "expense";
   int _selectedAccount = 1;
 
-  final List<_CategoryItem> _categories = [
-    _CategoryItem("assets/icons/new_car.svg", "Taksi", 1),
-    _CategoryItem("assets/icons/new_home.svg", "Ijara", 2),
-    _CategoryItem("assets/icons/new_greeting.svg", "Salomallik", 3),
-    _CategoryItem("assets/icons/new_food.svg", "Food", 4),
-    _CategoryItem("assets/icons/new_shop.svg", "Shop", 5),
-    _CategoryItem("assets/icons/new_fun.svg", "Fun", 6),
+  List<CategoryModel> _categories = [];
+  bool _isLoading = true;
+
+  List<_WalletModel> _wallets = [
+    _WalletModel(1, 'Naqd pul UZS', 0.0, 'UZS', 'assets/icons/sum.svg'),
+    _WalletModel(2, 'Naqd pul RUB', 0.0, 'RUB', 'assets/icons/rubl.svg'),
+    _WalletModel(3, 'Naqd pul USD', 0.0, 'USD', 'assets/icons/dollar_new.svg'),
+    _WalletModel(4, 'Naqd pul EUR', 0.0, 'EUR', 'assets/icons/euro_new.svg'),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCategories();
+    _loadBalances();
+  }
+
+  Future<void> _loadBalances() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _wallets = _wallets.map((w) {
+        return w.copyWith(balance: prefs.getDouble('wallet_balance_${w.id}') ?? 0.0);
+      }).toList();
+    });
+  }
+
+  Future<void> _saveBalances() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (var w in _wallets) {
+      await prefs.setDouble('wallet_balance_${w.id}', w.balance);
+    }
+  }
+
+  Future<void> _fetchCategories() async {
+    try {
+      final repo = context.read<CategoryRepository>();
+      final categories = await repo.getUserCategories();
+      if (mounted) {
+        setState(() {
+          _categories = categories;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+  }
+
+  Widget _buildIcon(String iconStr, String categoryName, {Color? color}) {
+    String path = "car.svg"; 
+    switch (categoryName.toLowerCase()) {
+      case "oziq-ovqat":
+      case "oziq ovqat": path = "basket.svg"; break;
+      case "kiyim-kechak":
+      case "kiyinish": path = "shirt.svg"; break;
+      case "jamoat transporti":
+      case "transport": path = "bus.svg"; break;
+      case "taxi":
+      case "taksi": path = "car.svg"; break;
+      case "sayohat":
+      case "sayohatlar": path = "flight.svg"; break;
+      case "kommunal to'lovlar": path = "payment.svg"; break;
+      case "sog'liq":
+      case "salomatlik": path = "heart.svg"; break;
+      case "ta'lim": path = "statistic.svg"; break;
+      case "ijara": path = "home.svg"; break;
+      case "internet": path = "wifi.svg"; break;
+      case "ovqatlanish": path = "dish.svg"; break;
+      case "ko'ngilochar": path = "tv.svg"; break;
+      case "sport": path = "sport.svg"; break;
+      case "xizmatlar": path = "clock.svg"; break;
+      case "jarimalar": path = "warning.svg"; break;
+      case "mashina": path = "taxi.svg"; break;
+      case "o'tkazmalar": path = "send.svg"; break;
+      case "xayriya": path = "full_heart.svg"; break;
+      case "bolalar": path = "child.svg"; break;
+      case "o'yinlar": path = "play.svg"; break;
+      case "kosmetikalar": path = "cosmetic.svg"; break;
+      case "yoqilg'i": path = "fuel.svg"; break;
+      default: path = "basket.svg";
+    }
+    return SvgPicture.asset(
+      "assets/icons/$path",
+      width: 28.w,
+      height: 28.w,
+      colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,6 +157,16 @@ class _AddTransactionViewState extends State<AddTransactionView> {
       body: BlocListener<TransactionBloc, TransactionState>(
         listener: (context, state) {
           if (state is TransactionSubmitSuccess) {
+            setState(() {
+              final walletIdx = _wallets.indexWhere((w) => w.id == _selectedAccount);
+              if (walletIdx != -1) {
+                double decrementAmount = _amount;
+                double newBalance = _wallets[walletIdx].balance - decrementAmount;
+                _wallets[walletIdx] = _wallets[walletIdx].copyWith(balance: newBalance);
+                _saveBalances();
+              }
+              _amount = 0.0; // reset
+            });
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
                 content: Text('Tranzaksiya muvaffaqiyatli qo\'shildi!'),
@@ -71,7 +175,7 @@ class _AddTransactionViewState extends State<AddTransactionView> {
               ),
             );
             context.read<TransactionBloc>().add(ResetTransactionStateEvent());
-            context.go(Routers.home);
+            // context.go(Routers.home); // Uyga o'tmasdan balans o'zgarganini ko'rish uchun kommentlandi
           } else if (state is TransactionError) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -359,7 +463,20 @@ class _AddTransactionViewState extends State<AddTransactionView> {
           ),
         ),
         GestureDetector(
-          onTap: () {},
+          onTap: () async {
+            final dynamic selected = await context.push(Routers.transactionCategories);
+            if (selected != null && selected is CategoryModel) {
+              int idx = _categories.indexWhere((c) => c.id == selected.id);
+              if (idx != -1) {
+                setState(() => _selectedIndex = idx);
+              } else {
+                setState(() {
+                  _categories.add(selected);
+                  _selectedIndex = _categories.length - 1;
+                });
+              }
+            }
+          },
           child: Text(
             "Barchasini ko'rish",
             style: TextStyle(
@@ -374,6 +491,18 @@ class _AddTransactionViewState extends State<AddTransactionView> {
   }
 
   Widget _buildCategoriesGrid(Color cardColor, Color textColor) {
+    if (_isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          color: const Color(0xFF006673),
+        ),
+      );
+    }
+    if (_categories.isEmpty) {
+      return Center(
+        child: Text("Hozircha hech qanday kategoriya qo'shilmagan"),
+      );
+    }
     return Wrap(
       spacing: 16.w,
       runSpacing: 16.h,
@@ -390,7 +519,7 @@ class _AddTransactionViewState extends State<AddTransactionView> {
   }
 
   Widget _buildCategoryCard({
-    required _CategoryItem item,
+    required CategoryModel item,
     required bool isSelected,
     required Color cardColor,
     required Color textColor,
@@ -422,14 +551,10 @@ class _AddTransactionViewState extends State<AddTransactionView> {
         ),
         child: Column(
           children: [
-            SvgPicture.asset(
+            _buildIcon(
               item.icon,
-              width: 28.w,
-              height: 28.w,
-              colorFilter: ColorFilter.mode(
-                isSelected ? Colors.white : const Color(0xFF058F9D),
-                BlendMode.srcIn,
-              ),
+              item.name,
+              color: isSelected ? Colors.white : const Color(0xFF058F9D),
             ),
             SizedBox(height: 12.h),
             Text(
@@ -492,7 +617,7 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                 ),
                 SizedBox(height: 4.h),
                 Text(
-                  "BALANS: \$4,250.00",
+                  "BALANS: ${_wallets.firstWhere((w) => w.id == _selectedAccount, orElse: () => _wallets.first).balance.toStringAsFixed(0)} ${_wallets.firstWhere((w) => w.id == _selectedAccount, orElse: () => _wallets.first).code}",
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w400,
@@ -571,32 +696,49 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                                   ],
                                 ),
                                 SizedBox(height: 16.h),
-                                _item(
-                                  'Naqd pul UZS',
-                                  -22222,  // string sum
-                                  'UZS',
-                                  -24000,
-                                  'assets/icons/sum.svg',
+                                ..._wallets.map((w) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      setState(() => _selectedAccount = w.id);
+                                      Navigator.pop(context);
+                                    },
+                                    child: _item(
+                                      w.name,
+                                      w.balance,
+                                      w.code,
+                                      w.code == 'UZS' ? null : 0.0, // mock UZS equivalent check
+                                      w.icon,
+                                      _selectedAccount == w.id,
+                                    ),
+                                  );
+                                }).toList(),
+                                SizedBox(height: 8.h),
+                                GestureDetector(
+                                  onTap: () {},
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF3F3F3),
+                                      borderRadius: BorderRadius.circular(24.r),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Icon(Icons.add, color: Colors.black, size: 24.w),
+                                        SizedBox(width: 16.w),
+                                        Text(
+                                          "Hisob qo'shish",
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16.sp,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                                _item(
-                                  'Naqd pul USD',
-                                  2345,  // string sum
-                                  'USD',
-                                  24000,
-                                  'assets/icons/dollar.svg',
-                                ),_item(
-                                  'Naqd pul RUB',
-                                  4444,  // string sum
-                                  'RUB',
-                                  24000,
-                                  'assets/icons/rubl.svg',
-                                ),_item(
-                                  'Naqd pul EUR',
-                                  3333,  // string sum
-                                  'EUR',
-                                  24000,
-                                  'assets/icons/euro.svg',
-                                ),
+                                SizedBox(height: 24.h),
                               ],
                             ),
                           ),
@@ -630,15 +772,25 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                     return;
                   }
 
+                  if (_categories.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Iltimos, kategoriya tanlang'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                    return;
+                  }
+
                   context.read<TransactionBloc>().add(
                     SubmitTransactionEvent(
                       type: _transactionType,
                       amount: _amount,
                       note: _note,
-                      currency: 0,
+                      currency: _selectedAccount, // valyutani id sifatida ishlatish (yoki mos valyuta idsini joylash)
                       // UZS uchun 0
                       account: _selectedAccount,
-                      category: _categories[_selectedIndex].categoryId,
+                      category: _categories[_selectedIndex].id,
                       dateTime: _selectedDate,
                     ),
                   );
@@ -690,115 +842,119 @@ class _AddTransactionViewState extends State<AddTransactionView> {
 
   Widget _item(
       String text,
-      double sum,  // double sum o'zgartirildi
+      double sum,
       String sumCurrencyType,
-      double? sumDifferences,
+      double? uzsEquivalent,
       String icon,
+      bool isSelected,
       ) {
-    String formattedSum = _formatNumber(sum);
+    String formattedSum = _formatNumber(sum).replaceAll(',', ' ');
     bool isNegative = sum < 0;
-    String sign = isNegative ? '- ' : '+ ';
-    String absoluteSum = formattedSum.replaceFirst('-', '');
-    String? formattedDifference;
-    if (sumDifferences != null) {
-      formattedDifference = _formatNumber(sumDifferences.abs());
-    }
-
+    String absoluteSum = (isNegative ? "-" : "") + formattedSum.replaceFirst('-', '');
+    
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
+        border: isSelected ? Border.all(color: const Color(0xFFB7E4C7), width: 1.5) : null,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _itemItems(icon),
-          SizedBox(width: 16.w),
-          Text(
-            text,
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
-              fontSize: 16.sp,
-            ),
+          Row(
+            children: [
+              _itemItems(icon, isSelected),
+              SizedBox(width: 16.w),
+              Text(
+                text,
+                style: TextStyle(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15.sp,
+                ),
+              ),
+            ],
           ),
-          SizedBox(width: 18.w),
-          Text(
-            sign,
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(
+                    absoluteSum,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16.sp,
+                    ),
+                  ),
+                  SizedBox(width: 4.w),
+                  Text(
+                    sumCurrencyType,
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11.sp,
+                    ),
+                  ),
+                ],
+              ),
+              if (uzsEquivalent != null && sumCurrencyType != 'UZS')
+                Padding(
+                  padding: EdgeInsets.only(top: 4.h),
+                  child: Text(
+                    "${_formatNumber(uzsEquivalent).replaceAll(',', ' ')}.00 UZS",
+                    style: TextStyle(
+                      color: const Color(0xFF7C7777),
+                      fontWeight: FontWeight.w400,
+                      fontSize: 10.sp,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          Text(
-            absoluteSum,
-            style: TextStyle(
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
-              fontSize: 18,
-            ),
-          ),
-          SizedBox(width: 4.w),
-          // if (sumDifferences != null && sumDifferences != 0)
-          //   Padding(
-          //     padding: EdgeInsets.only(top: 4.h),
-          //     child: Row(
-          //       children: [
-          //         Icon(
-          //           sumDifferences < 0 ? Icons.arrow_downward : Icons.arrow_upward,
-          //           size: 12.sp,
-          //           color: sumDifferences < 0 ? Colors.red : Colors.green,
-          //         ),
-          //         SizedBox(width: 4.w),
-          //         Text(
-          //           _formatNumber(sumDifferences.abs()),
-          //           style: TextStyle(
-          //             color: sumDifferences < 0 ? Colors.red : Colors.green,
-          //             fontWeight: FontWeight.w500,
-          //             fontSize: 12.sp,
-          //           ),
-          //         ),
-          //         SizedBox(width: 4.w),
-          //         Text(
-          //           sumCurrencyType,
-          //           style: TextStyle(
-          //             color: sumDifferences < 0 ? Colors.red : Colors.green,
-          //             fontWeight: FontWeight.w500,
-          //             fontSize: 12.sp,
-          //           ),
-          //         ),
-          //         Text(
-          //           ' (${sumDifferences < 0 ? 'kamaydi' : 'ko\'paydi'})',
-          //           style: TextStyle(
-          //             color: Colors.grey,
-          //             fontWeight: FontWeight.w400,
-          //             fontSize: 11.sp,
-          //           ),
-          //         ),
-          //       ],
-          //     ),
-          //   ),
         ],
       ),
     );
   }
+
   String _formatNumber(double number) {
     final formatter = NumberFormat('#,###', 'en_US');
     return formatter.format(number.toInt());
   }
 
-  Widget _itemItems(String icon) {
-    return Container(
-      height: 48.h,
-      width: 48.w,
-      decoration: BoxDecoration(
-        color: Color(0xffFCE8F3),
-        borderRadius: BorderRadius.circular(9999),
-      ),
-      child: Center(child: SvgPicture.asset(icon)),
+  Widget _itemItems(String icon, bool isSelected) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Container(
+          height: 48.w,
+          width: 48.w,
+          decoration: const BoxDecoration(
+            color: Color(0xffFCE8F3),
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: SvgPicture.asset(
+              icon, 
+              width: 24.w, 
+              height: 24.w, 
+              colorFilter: const ColorFilter.mode(Color(0xFFE91E63), BlendMode.srcIn),
+            ),
+          ),
+        ),
+        if (isSelected)
+          Positioned(
+            top: 2,
+            right: 0,
+            child: Icon(Icons.star, color: const Color(0xFFE91E63), size: 14.w),
+          ),
+      ],
     );
   }
 }

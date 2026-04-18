@@ -16,9 +16,10 @@ import 'package:tejamkor/add_transactions/pages/add_transaction_view.dart';
 import 'package:tejamkor/monthly_limit/pages/monthly_limit_view.dart';
 import 'package:tejamkor/statistics/pages/statistics_view.dart';
 import 'package:tejamkor/transaction_history/pages/transaction_history_view.dart';
+import 'package:tejamkor/add_transactions/pages/transaction_categories_view.dart';
 
 final router = GoRouter(
-  initialLocation: Routers.addTransaction,
+  initialLocation: Routers.signUp,
   routes: [
     GoRoute(path: Routers.onboarding, builder: (_, _) => OnboardingView()),
     GoRoute(path: Routers.login, builder: (_, _) => LoginView()),
@@ -46,7 +47,7 @@ final router = GoRouter(
     GoRoute(
       path: Routers.addTransaction,
       builder: (context, state) => BlocProvider(
-        create: (context)=> TransactionBloc(context.read()),
+        create: (context) => TransactionBloc(context.read()),
         child: const AddTransactionView(),
       ),
     ),
@@ -55,6 +56,10 @@ final router = GoRouter(
     GoRoute(
       path: Routers.transactionHistory,
       builder: (_, _) => TransactionHistoryView(),
+    ),
+    GoRoute(
+      path: Routers.transactionCategories,
+      builder: (_, _) => TransactionCategoriesView(),
     ),
   ],
 );
