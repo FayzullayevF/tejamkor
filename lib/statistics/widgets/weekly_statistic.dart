@@ -9,80 +9,101 @@ class WeeklyChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxValue =
-    data.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    double maxValue = 0;
+    if (data.isNotEmpty) {
+      maxValue = data.map((e) => e.value).reduce((a, b) => a > b ? a : b);
+    }
+    if (maxValue == 0) maxValue = 1;
 
-    const activeColor1 = Color(0xff008C9E);
-    const activeColor2 = Color(0xff006673);
-    const bgColor = Color(0xffF0F4F5);
+    const lightTeal = Color(0xff008C9E);
+    const darkTeal = Color(0xff006673);
+    final bgColor = const Color(0xff008C9E).withValues(alpha: 0.1);
 
     return Container(
-      height: 192.h,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+      height: 220.h,
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(32),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: List.generate(data.length, (index) {
-          final e = data[index];
+      child: Column(
+        children: [
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: List.generate(data.length, (index) {
+                final e = data[index];
+                final percent = e.value / maxValue;
+                // Alternating colors: Du, Chor, Ju, Yak vs Se, Pay, Sha
+                final isLight = index % 2 == 0;
+                final activeColor = isLight ? lightTeal : darkTeal;
+                
+                // Special highlight for 'Chor' (Wednesday) as in the screenshot
+                final isChor = e.day == "Chor";
 
-          final percent = e.value / maxValue;
-          final activeColor = index % 2 == 0 ? activeColor1 : activeColor2;
-
-          return Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // 🔥 BAR
-                SizedBox(
-                  height: 100.h,
+                return Expanded(
                   child: Stack(
                     alignment: Alignment.bottomCenter,
+                    clipBehavior: Clip.none,
                     children: [
-                      // Inactive (background shape)
+                      // Background Bar
                       Container(
-                        height: 100.h, // same maximum height for all backgrounds to create uniform wavy look
+                        margin: EdgeInsets.symmetric(horizontal: 1.w),
                         decoration: BoxDecoration(
                           color: bgColor,
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(50),
                             topRight: Radius.circular(50),
                           ),
                         ),
                       ),
 
-                      // Active (foreground shape)
+                      // Active Bar
                       Container(
-                        height: 100.h * percent,
+                        height: 120.h * percent,
+                        margin: EdgeInsets.symmetric(horizontal: 1.w),
                         decoration: BoxDecoration(
                           color: activeColor,
-                          borderRadius: BorderRadius.only(
+                          borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(50),
                             topRight: Radius.circular(50),
                           ),
+                          boxShadow: isChor ? [
+                            BoxShadow(
+                              color: activeColor.withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            )
+                          ] : null,
                         ),
                       ),
                     ],
                   ),
-                ),
-
-              SizedBox(height: 8.h),
-
-              // 🔤 DAY TEXT
-              Text(
-                e.day,
-                style: TextStyle(
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ));
-        }),
+                );
+              }),
+            ),
+          ),
+          SizedBox(height: 16.h),
+          Row(
+            children: List.generate(data.length, (index) {
+                final e = data[index];
+                final isChor = e.day == "Chor";
+                return Expanded(
+                  child: Center(
+                    child: Text(
+                      e.day,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: isChor ? FontWeight.w700 : FontWeight.w500,
+                        color: isChor ? const Color(0xff006673) : const Color(0xff3E494B),
+                      ),
+                    ),
+                  ),
+                );
+            }),
+          ),
+        ],
       ),
     );
   }

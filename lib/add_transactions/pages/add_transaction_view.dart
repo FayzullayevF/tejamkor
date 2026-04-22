@@ -1,40 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
-import '../../../core/routing/router.dart';
-import '../../../categories/blocs/currency/currency_bloc.dart';
-import '../../../monthly_limit/widgets/edit_limit_dialog.dart';
-import '../../../home/widgets/custom_date_dialog.dart';
-import '../../../home/widgets/custom_note_dialog.dart';
-import '../blocs/add_transactions_bloc.dart';
-import '../blocs/add_transactions_event.dart';
-import '../blocs/add_transactions_state.dart';
-import '../../../categories/data/models/category_model.dart';
-import '../../../categories/data/repositories/category_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'package:tejamkor/core/routing/router.dart';
+import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
+import 'package:tejamkor/add_transactions/blocs/add_transactions_bloc.dart';
+import 'package:tejamkor/add_transactions/blocs/add_transactions_event.dart';
+import 'package:tejamkor/add_transactions/blocs/add_transactions_state.dart';
+import 'package:tejamkor/add_transactions/blocs/accounts/accounts_event.dart';
+import 'package:tejamkor/add_transactions/blocs/accounts/accounts_bloc.dart';
+import 'package:tejamkor/add_transactions/blocs/accounts/accounts_state.dart';
+import 'package:tejamkor/categories/data/models/category_model.dart';
+import 'package:tejamkor/categories/data/models/currency_model.dart';
+import 'package:tejamkor/categories/data/repositories/category_repository.dart';
+import 'package:tejamkor/categories/data/repositories/currency_repository.dart';
+
+import '../data/models/wallet_model.dart';
+import '../widgets/transaction_app_bar.dart';
+import '../widgets/transaction_type_toggle.dart';
+import '../widgets/amount_input_section.dart';
+import '../widgets/transaction_info_cards.dart';
+import '../widgets/category_selection_grid.dart';
+import '../widgets/wallet_selection_card.dart';
+import '../widgets/save_transaction_button.dart';
+import '../widgets/income_placeholder.dart';
 
 class AddTransactionView extends StatefulWidget {
   const AddTransactionView({super.key});
 
   @override
   State<AddTransactionView> createState() => _AddTransactionViewState();
-}
-
-class _WalletModel {
-  final int id;
-  final String name;
-  final double balance;
-  final String code;
-  final String icon;
-
-  _WalletModel(this.id, this.name, this.balance, this.code, this.icon);
-
-  _WalletModel copyWith({double? balance}) {
-    return _WalletModel(id, name, balance ?? this.balance, code, icon);
-  }
 }
 
 class _AddTransactionViewState extends State<AddTransactionView> {
@@ -44,98 +41,128 @@ class _AddTransactionViewState extends State<AddTransactionView> {
   String _note = "Add note";
   String _transactionType = "expense";
   int _selectedAccount = 1;
+  int _selectedCurrencyId = 1;
+  final double maxTransactionAmount = 100000000.0;
 
-  List<CategoryModel> _categories = [];
+  List<CategoryModel> _allCategoriesList = [];
+  List<CategoryModel> _filteredCategories = [];
+  List<CurrencyModel> _allCurrencies = [];
   bool _isLoading = true;
-
-  List<_WalletModel> _wallets = [
-    _WalletModel(1, 'Naqd pul UZS', 0.0, 'UZS', 'assets/icons/sum.svg'),
-    _WalletModel(2, 'Naqd pul RUB', 0.0, 'RUB', 'assets/icons/rubl.svg'),
-    _WalletModel(3, 'Naqd pul USD', 0.0, 'USD', 'assets/icons/dollar_new.svg'),
-    _WalletModel(4, 'Naqd pul EUR', 0.0, 'EUR', 'assets/icons/euro_new.svg'),
-  ];
+  bool _isCurrenciesLoading = true;
+  List<WalletModel> _wallets = [];
 
   @override
   void initState() {
     super.initState();
     _fetchCategories();
+    _fetchCurrencies();
+    context.read<AccountsBloc>().add(FetchAccountsEvent());
     _loadBalances();
-  }
-
-  Future<void> _loadBalances() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _wallets = _wallets.map((w) {
-        return w.copyWith(balance: prefs.getDouble('wallet_balance_${w.id}') ?? 0.0);
-      }).toList();
-    });
-  }
-
-  Future<void> _saveBalances() async {
-    final prefs = await SharedPreferences.getInstance();
-    for (var w in _wallets) {
-      await prefs.setDouble('wallet_balance_${w.id}', w.balance);
-    }
   }
 
   Future<void> _fetchCategories() async {
     try {
       final repo = context.read<CategoryRepository>();
-      final categories = await repo.getUserCategories();
+      var categories = await repo.getUserCategories();
+      
+      // Agar user tanlagan kategoriyalar bo'sh bo'lsa, defaultlarni olib kelamiz
+      if (categories.isEmpty) {
+        categories = await repo.getCategories();
+      }
+      
       if (mounted) {
         setState(() {
-          _categories = categories;
+          _allCategoriesList = categories;
+          _updateFilteredCategories();
           _isLoading = false;
         });
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Widget _buildIcon(String iconStr, String categoryName, {Color? color}) {
-    String path = "car.svg"; 
-    switch (categoryName.toLowerCase()) {
-      case "oziq-ovqat":
-      case "oziq ovqat": path = "basket.svg"; break;
-      case "kiyim-kechak":
-      case "kiyinish": path = "shirt.svg"; break;
-      case "jamoat transporti":
-      case "transport": path = "bus.svg"; break;
-      case "taxi":
-      case "taksi": path = "car.svg"; break;
-      case "sayohat":
-      case "sayohatlar": path = "flight.svg"; break;
-      case "kommunal to'lovlar": path = "payment.svg"; break;
-      case "sog'liq":
-      case "salomatlik": path = "heart.svg"; break;
-      case "ta'lim": path = "statistic.svg"; break;
-      case "ijara": path = "home.svg"; break;
-      case "internet": path = "wifi.svg"; break;
-      case "ovqatlanish": path = "dish.svg"; break;
-      case "ko'ngilochar": path = "tv.svg"; break;
-      case "sport": path = "sport.svg"; break;
-      case "xizmatlar": path = "clock.svg"; break;
-      case "jarimalar": path = "warning.svg"; break;
-      case "mashina": path = "taxi.svg"; break;
-      case "o'tkazmalar": path = "send.svg"; break;
-      case "xayriya": path = "full_heart.svg"; break;
-      case "bolalar": path = "child.svg"; break;
-      case "o'yinlar": path = "play.svg"; break;
-      case "kosmetikalar": path = "cosmetic.svg"; break;
-      case "yoqilg'i": path = "fuel.svg"; break;
-      default: path = "basket.svg";
+  void _updateFilteredCategories() {
+    _filteredCategories = _allCategoriesList
+        .where((c) => c.type == _transactionType)
+        .toList();
+    _selectedIndex = 0;
+  }
+
+  Future<void> _fetchCurrencies() async {
+    try {
+      final repo = context.read<CurrencyRepository>();
+      final currencies = await repo.getCurrencies();
+      if (mounted) {
+        setState(() {
+          _allCurrencies = currencies;
+          _isCurrenciesLoading = false;
+          if (_allCurrencies.isNotEmpty) {
+            final uzs = _allCurrencies.firstWhere(
+              (c) => c.code == 'UZS',
+              orElse: () => _allCurrencies.first,
+            );
+            _selectedCurrencyId = uzs.id;
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isCurrenciesLoading = false);
     }
-    return SvgPicture.asset(
-      "assets/icons/$path",
-      width: 28.w,
-      height: 28.w,
-      colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+  }
+
+  Future<void> _loadBalances() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      for (int i = 0; i < _wallets.length; i++) {
+        final savedBalance = prefs.getDouble('wallet_balance_${_wallets[i].id}');
+        if (savedBalance != null) {
+          _wallets[i] = _wallets[i].copyWith(balance: savedBalance);
+        }
+      }
+    });
+  }
+
+  Future<void> _saveBalances() async {
+    final prefs = await SharedPreferences.getInstance();
+    for (var wallet in _wallets) {
+      await prefs.setDouble('wallet_balance_${wallet.id}', wallet.balance);
+    }
+  }
+
+  String _getWalletIcon(String code) {
+    switch (code) {
+      case 'UZS': return "assets/icons/tejamkor_kredit.svg";
+      case 'USD': return "assets/icons/tejamkor_otkazmalar.svg";
+      case 'EUR': return "assets/icons/tejamkor_omonatlar.svg";
+      default: return "assets/icons/tejamkor_kredit.svg";
+    }
+  }
+
+  void _onSave() {
+    if (_amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Iltimos, summani kiriting'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+    if (_filteredCategories.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Iltimos, kategoriya tanlang'), backgroundColor: Colors.orange),
+      );
+      return;
+    }
+
+    context.read<TransactionBloc>().add(
+      SubmitTransactionEvent(
+        type: _transactionType,
+        amount: _amount,
+        note: _note == "Add note" ? "" : _note,
+        currency: _selectedCurrencyId,
+        account: _selectedAccount,
+        category: _filteredCategories[_selectedIndex].id,
+        dateTime: _selectedDate,
+      ),
     );
   }
 
@@ -143,49 +170,67 @@ class _AddTransactionViewState extends State<AddTransactionView> {
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subtitleColor = isDark
-        ? Colors.white54
-        : const Color(0xFF7C7777);
+    final Color subtitleColor = isDark ? Colors.white54 : const Color(0xFF7C7777);
     final Color cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
 
-    final currencyState = context.watch<CurrencyBloc>().state;
-    final currencySymbol =
-        currencyState.response?.currencyDetail?.symbol ?? 'so‘m';
+    final selectedCurrency = _allCurrencies.where((c) => c.id == _selectedCurrencyId).firstOrNull;
+    final currencySymbol = selectedCurrency?.symbol ?? 'so\'m';
 
     return Scaffold(
       backgroundColor: isDark ? Colors.black : const Color(0xffF3F3F3),
-      body: BlocListener<TransactionBloc, TransactionState>(
-        listener: (context, state) {
-          if (state is TransactionSubmitSuccess) {
-            setState(() {
-              final walletIdx = _wallets.indexWhere((w) => w.id == _selectedAccount);
-              if (walletIdx != -1) {
-                double decrementAmount = _amount;
-                double newBalance = _wallets[walletIdx].balance - decrementAmount;
-                _wallets[walletIdx] = _wallets[walletIdx].copyWith(balance: newBalance);
-                _saveBalances();
+      body: MultiBlocListener(
+        listeners: [
+          BlocListener<TransactionBloc, TransactionState>(
+            listener: (context, state) {
+              if (state is TransactionSubmitSuccess) {
+                setState(() {
+                  final walletIdx = _wallets.indexWhere((w) => w.id == _selectedAccount);
+                  if (walletIdx != -1) {
+                    double newBalance;
+                    if (_transactionType == 'income') {
+                      newBalance = _wallets[walletIdx].balance + _amount;
+                    } else {
+                      newBalance = _wallets[walletIdx].balance - _amount;
+                    }
+                    _wallets[walletIdx] = _wallets[walletIdx].copyWith(balance: newBalance);
+                    _saveBalances();
+                  }
+                  _amount = 0.0;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Tranzaksiya muvaffaqiyatli qo\'shildi!'), backgroundColor: Colors.green),
+                );
+                context.read<TransactionBloc>().add(ResetTransactionStateEvent());
+              } else if (state is TransactionError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Xatolik: ${state.message}'), backgroundColor: Colors.red),
+                );
               }
-              _amount = 0.0; // reset
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Tranzaksiya muvaffaqiyatli qo\'shildi!'),
-                backgroundColor: Colors.green,
-                duration: Duration(seconds: 2),
-              ),
-            );
-            context.read<TransactionBloc>().add(ResetTransactionStateEvent());
-            // context.go(Routers.home); // Uyga o'tmasdan balans o'zgarganini ko'rish uchun kommentlandi
-          } else if (state is TransactionError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Xatolik: ${state.message}'),
-                backgroundColor: Colors.red,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-          }
-        },
+            },
+          ),
+          BlocListener<AccountsBloc, AccountsState>(
+            listener: (context, state) {
+              if (state is AccountsLoaded) {
+                setState(() {
+                  _wallets = state.accounts.map((acc) {
+                    final code = acc.currencyDetail?.code ?? 'UZS';
+                    return WalletModel(
+                      acc.id,
+                      acc.name,
+                      double.tryParse(acc.balance) ?? 0.0,
+                      code,
+                      _getWalletIcon(code),
+                    );
+                  }).toList();
+                  if (_wallets.isNotEmpty && !_wallets.any((w) => w.id == _selectedAccount)) {
+                    _selectedAccount = _wallets.first.id;
+                  }
+                  _loadBalances();
+                });
+              }
+            },
+          ),
+        ],
         child: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
@@ -195,20 +240,92 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   SizedBox(height: 20.h),
-                  _buildAppBar(textColor),
+                  TransactionAppBar(textColor: textColor, onBack: () => context.go(Routers.home)),
+                  SizedBox(height: 24.h),
+                  TransactionTypeToggle(
+                    transactionType: _transactionType,
+                    onTypeChanged: (type) {
+                      setState(() {
+                        _transactionType = type;
+                        _updateFilteredCategories();
+                      });
+                    },
+                  ),
                   SizedBox(height: 32.h),
-                  _buildAmountInput(currencySymbol, textColor),
+                  AmountInputSection(
+                    amount: _amount,
+                    selectedCurrencyId: _selectedCurrencyId,
+                    allCurrencies: _allCurrencies,
+                    currencySymbol: currencySymbol,
+                    textColor: textColor,
+                    maxTransactionAmount: maxTransactionAmount,
+                    onAmountChanged: (val) => setState(() => _amount = val),
+                    onCurrencyChanged: (id) => setState(() => _selectedCurrencyId = id),
+                  ),
                   SizedBox(height: 32.h),
-                  _buildInfoCards(cardColor, textColor, subtitleColor),
+                  TransactionInfoCards(
+                    selectedDate: _selectedDate,
+                    note: _note,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    subtitleColor: subtitleColor,
+                    onDateChanged: (date) => setState(() => _selectedDate = date),
+                    onNoteChanged: (note) => setState(() => _note = note),
+                  ),
                   SizedBox(height: 32.h),
-                  _buildCategorySection(textColor),
-                  SizedBox(height: 20.h),
-
-                  _buildCategoriesGrid(cardColor, textColor),
+                  if (_isLoading)
+                    const Center(child: CircularProgressIndicator(color: Color(0xFF006673)))
+                  else
+                    CategorySelectionGrid(
+                      categories: _filteredCategories,
+                      selectedIndex: _selectedIndex,
+                      cardColor: cardColor,
+                      textColor: textColor,
+                      onCategorySelected: (idx) => setState(() => _selectedIndex = idx),
+                      onSeeAll: () async {
+                        final selected = await context.push<CategoryModel>(Routers.transactionCategories);
+                        if (selected != null) {
+                          setState(() {
+                            if (!_allCategoriesList.any((c) => c.id == selected.id)) {
+                              _allCategoriesList.insert(0, selected);
+                            }
+                            _transactionType = selected.type; 
+                            _updateFilteredCategories();
+                            _selectedIndex = _filteredCategories.indexWhere((c) => c.id == selected.id);
+                          });
+                        }
+                      },
+                    ),
                   SizedBox(height: 32.h),
-                  _buildWalletCard(cardColor, textColor, subtitleColor, isDark),
+                  WalletSelectionCard(
+                    wallets: _wallets,
+                    selectedAccountId: _selectedAccount,
+                    cardColor: cardColor,
+                    textColor: textColor,
+                    subtitleColor: subtitleColor,
+                    isDark: isDark,
+                    onAccountSelected: (id) {
+                      setState(() {
+                         _selectedAccount = id;
+                         final wallet = _wallets.where((w) => w.id == id).firstOrNull;
+                         if (wallet != null) {
+                            final currency = _allCurrencies.where((c) => c.code == wallet.code).firstOrNull;
+                            if (currency != null) {
+                               _selectedCurrencyId = currency.id;
+                            }
+                         }
+                      });
+                    },
+                  ),
                   SizedBox(height: 32.h),
-                  _buildSaveButton(),
+                  BlocBuilder<TransactionBloc, TransactionState>(
+                    builder: (context, state) {
+                      return SaveTransactionButton(
+                        isSubmitting: state is TransactionSubmitting,
+                        onSave: _onSave,
+                      );
+                    },
+                  ),
                   SizedBox(height: 40.h),
                 ],
               ),
@@ -216,745 +333,6 @@ class _AddTransactionViewState extends State<AddTransactionView> {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildAppBar(Color textColor) {
-    return Row(
-      children: [
-        GestureDetector(
-          onTap: () => context.go(Routers.home),
-          child: Icon(
-            Icons.arrow_back_ios_new_rounded,
-            color: textColor,
-            size: 24.w,
-          ),
-        ),
-        SizedBox(width: 16.w),
-        Text(
-          "Tranzaktsiya qo'shish",
-          style: TextStyle(
-            color: textColor,
-            fontSize: 18.sp,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
-    );
-  }
-
-  static const double maxTransactionAmount = 100000000;
-
-  Widget _buildAmountInput(String currencySymbol, Color textColor) {
-    String formattedAmount = _formatAmount(_amount);
-    return Column(
-      children: [
-        Center(
-          child: GestureDetector(
-            onTap: () async {
-              final newAmount = await showDialog<double>(
-                context: context,
-                builder: (context) => EditLimitDialog(
-                  currentLimit: _amount,
-                  currencySymbol: currencySymbol,
-                  maxLimit: maxTransactionAmount, // Pass max limit
-                ),
-              );
-              if (newAmount != null) {
-                setState(() {
-                  _amount = newAmount;
-                });
-              }
-            },
-            child: Text(
-              "Mablag'ni kiriting",
-              style: TextStyle(
-                color: Color(0xff3E494B),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: 8.h),
-        if (_amount > maxTransactionAmount)
-          Container(
-            margin: EdgeInsets.only(bottom: 8.h),
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: Colors.red.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12.r),
-            ),
-            child: Text(
-              'Maksimal summa ${_formatAmount(maxTransactionAmount)} so‘m',
-              style: TextStyle(
-                color: Colors.red,
-                fontSize: 12.sp,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Padding(
-              padding: EdgeInsets.only(bottom: 6.h),
-              child: Text(
-                currencySymbol,
-                style: const TextStyle(
-                  color: Color(0xFF006673),
-                  fontSize: 30,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            SizedBox(width: 8.w),
-            Text(
-              formattedAmount,
-              style: TextStyle(
-                color: _amount > maxTransactionAmount ? Colors.red : textColor,
-                fontSize: 48,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -1.0,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  String _formatAmount(double amount) {
-    int intAmount = amount.toInt();
-    final formatter = NumberFormat('#,###', 'en_US');
-    return formatter.format(intAmount);
-  }
-
-  Widget _buildInfoCards(
-    Color cardColor,
-    Color textColor,
-    Color subtitleColor,
-  ) {
-    return Row(
-      children: [
-        Expanded(
-          child: GestureDetector(
-            onTap: () async {
-              final date = await showDialog<DateTime>(
-                context: context,
-                builder: (context) =>
-                    CustomDateDialog(initialDate: _selectedDate),
-              );
-              if (date != null) setState(() => _selectedDate = date);
-            },
-            child: _buildInfoCard(
-              icon: "assets/icons/new_calendar.svg",
-              title: "SANA",
-              subtitle: DateFormat('MMM dd, yyyy').format(_selectedDate),
-              cardColor: cardColor,
-              textColor: textColor,
-              subtitleColor: subtitleColor,
-            ),
-          ),
-        ),
-        SizedBox(width: 16.w),
-        Expanded(
-          child: GestureDetector(
-            onTap: () async {
-              final noteResult = await showDialog<String>(
-                context: context,
-                builder: (context) => CustomNoteDialog(initialNote: _note),
-              );
-              if (noteResult != null && noteResult.isNotEmpty) {
-                setState(() => _note = noteResult);
-              }
-            },
-            child: _buildInfoCard(
-              icon: "assets/icons/new_data.svg",
-              title: "NOTE",
-              subtitle: _note.isEmpty || _note == "Add note"
-                  ? "Add note"
-                  : (_note.length > 10
-                        ? '${_note.substring(0, 10)}...'
-                        : _note),
-              cardColor: cardColor,
-              textColor: textColor,
-              subtitleColor: subtitleColor,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildInfoCard({
-    required String icon,
-    required String title,
-    required String subtitle,
-    required Color cardColor,
-    required Color textColor,
-    required Color subtitleColor,
-  }) {
-    final bool isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(24.r),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF2C2C2C) : const Color(0xFFE8F8F7),
-              shape: BoxShape.circle,
-            ),
-            child: SvgPicture.asset(
-              icon,
-              width: 16.w,
-              height: 16.w,
-              colorFilter: const ColorFilter.mode(
-                Color(0xFF058F9D),
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.w600,
-                  color: subtitleColor,
-                  letterSpacing: 1.0,
-                ),
-              ),
-              SizedBox(height: 2.h),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCategorySection(Color textColor) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          "Kategoriyani tanlang",
-          style: TextStyle(
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w700,
-            color: textColor,
-          ),
-        ),
-        GestureDetector(
-          onTap: () async {
-            final dynamic selected = await context.push(Routers.transactionCategories);
-            if (selected != null && selected is CategoryModel) {
-              int idx = _categories.indexWhere((c) => c.id == selected.id);
-              if (idx != -1) {
-                setState(() => _selectedIndex = idx);
-              } else {
-                setState(() {
-                  _categories.add(selected);
-                  _selectedIndex = _categories.length - 1;
-                });
-              }
-            }
-          },
-          child: Text(
-            "Barchasini ko'rish",
-            style: TextStyle(
-              fontSize: 12.sp,
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF006673),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCategoriesGrid(Color cardColor, Color textColor) {
-    if (_isLoading) {
-      return Center(
-        child: CircularProgressIndicator(
-          color: const Color(0xFF006673),
-        ),
-      );
-    }
-    if (_categories.isEmpty) {
-      return Center(
-        child: Text("Hozircha hech qanday kategoriya qo'shilmagan"),
-      );
-    }
-    return Wrap(
-      spacing: 16.w,
-      runSpacing: 16.h,
-      children: List.generate(_categories.length, (index) {
-        return _buildCategoryCard(
-          item: _categories[index],
-          isSelected: _selectedIndex == index,
-          cardColor: cardColor,
-          textColor: textColor,
-          onTap: () => setState(() => _selectedIndex = index),
-        );
-      }),
-    );
-  }
-
-  Widget _buildCategoryCard({
-    required CategoryModel item,
-    required bool isSelected,
-    required Color cardColor,
-    required Color textColor,
-    required VoidCallback onTap,
-  }) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final paddingWidth = 48.w;
-    final spacingWidth = 32.w;
-    final cardWidth = (screenWidth - paddingWidth - spacingWidth) / 3;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: cardWidth,
-        padding: EdgeInsets.symmetric(vertical: 24.h),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF006673) : cardColor,
-          borderRadius: BorderRadius.circular(24.r),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: const Color(0xFF058F9D).withValues(alpha: 0.3),
-                    blurRadius: 15,
-                    offset: const Offset(0, 8),
-                  ),
-                ]
-              : [],
-        ),
-        child: Column(
-          children: [
-            _buildIcon(
-              item.icon,
-              item.name,
-              color: isSelected ? Colors.white : const Color(0xFF058F9D),
-            ),
-            SizedBox(height: 12.h),
-            Text(
-              item.name,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isSelected ? Colors.white : textColor,
-                fontSize: 13.sp,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildWalletCard(
-    Color cardColor,
-    Color textColor,
-    Color subtitleColor,
-    bool isDark,
-  ) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      decoration: BoxDecoration(
-        color: cardColor,
-        borderRadius: BorderRadius.circular(24.r),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: EdgeInsets.all(12.w),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: isDark ? const Color(0xFF2C2C2C) : const Color(0xFFE8F8F7),
-            ),
-            child: SvgPicture.asset(
-              "assets/icons/new_wallet.svg",
-              width: 20.w,
-              height: 20.w,
-              colorFilter: const ColorFilter.mode(
-                Color(0xFF058F9D),
-                BlendMode.srcIn,
-              ),
-            ),
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Hamyonlar",
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: textColor,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  "BALANS: ${_wallets.firstWhere((w) => w.id == _selectedAccount, orElse: () => _wallets.first).balance.toStringAsFixed(0)} ${_wallets.firstWhere((w) => w.id == _selectedAccount, orElse: () => _wallets.first).code}",
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w400,
-                    color: subtitleColor,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          InkWell(
-            child: Icon(Icons.keyboard_arrow_down_rounded, color: textColor),
-            onTap: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) {
-                  return Container(
-                    width: double.infinity,
-                    height: MediaQuery.of(context).size.height * 0.5,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(40),
-                        topRight: Radius.circular(40),
-                      ),
-                    ),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 10.h),
-                          Center(
-                            child: Container(
-                              width: 40,
-                              height: 4,
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.grey,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                          ),
-
-                          Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 24.w),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(height: 5.h),
-
-                                // 🔹 Title + cancel
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const Text(
-                                      "Hisobni tanlang",
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w700,
-                                        color: Colors.black,
-                                      ),
-                                    ),
-
-                                    InkWell(
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                      },
-                                      child: SvgPicture.asset(
-                                        "assets/icons/x.svg",
-                                        color: Colors.black,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 16.h),
-                                ..._wallets.map((w) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      setState(() => _selectedAccount = w.id);
-                                      Navigator.pop(context);
-                                    },
-                                    child: _item(
-                                      w.name,
-                                      w.balance,
-                                      w.code,
-                                      w.code == 'UZS' ? null : 0.0, // mock UZS equivalent check
-                                      w.icon,
-                                      _selectedAccount == w.id,
-                                    ),
-                                  );
-                                }).toList(),
-                                SizedBox(height: 8.h),
-                                GestureDetector(
-                                  onTap: () {},
-                                  child: Container(
-                                    width: double.infinity,
-                                    padding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 20.w),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFF3F3F3),
-                                      borderRadius: BorderRadius.circular(24.r),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.add, color: Colors.black, size: 24.w),
-                                        SizedBox(width: 16.w),
-                                        Text(
-                                          "Hisob qo'shish",
-                                          style: TextStyle(
-                                            color: Colors.black,
-                                            fontSize: 16.sp,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(height: 24.h),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSaveButton() {
-    return BlocBuilder<TransactionBloc, TransactionState>(
-      builder: (context, state) {
-        return GestureDetector(
-          onTap: state is TransactionSubmitting
-              ? null
-              : () {
-                  if (_amount <= 0) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Iltimos, summani kiriting'),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                    return;
-                  }
-
-                  if (_categories.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Iltimos, kategoriya tanlang'),
-                        backgroundColor: Colors.orange,
-                      ),
-                    );
-                    return;
-                  }
-
-                  context.read<TransactionBloc>().add(
-                    SubmitTransactionEvent(
-                      type: _transactionType,
-                      amount: _amount,
-                      note: _note,
-                      currency: _selectedAccount, // valyutani id sifatida ishlatish (yoki mos valyuta idsini joylash)
-                      // UZS uchun 0
-                      account: _selectedAccount,
-                      category: _categories[_selectedIndex].id,
-                      dateTime: _selectedDate,
-                    ),
-                  );
-                },
-          child: Container(
-            height: 68.h,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(9999),
-              gradient: state is TransactionSubmitting
-                  ? const LinearGradient(colors: [Colors.grey, Colors.grey])
-                  : const LinearGradient(
-                      colors: [
-                        Color.fromARGB(255, 38, 187, 210),
-                        Color.fromARGB(255, 17, 28, 44),
-                      ],
-                    ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF058F9D).withValues(alpha: 0.3),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Center(
-              child: state is TransactionSubmitting
-                  ? SizedBox(
-                      width: 24.w,
-                      height: 24.h,
-                      child: const CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : Text(
-                      "Tranzaktsiyani saqlash",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _item(
-      String text,
-      double sum,
-      String sumCurrencyType,
-      double? uzsEquivalent,
-      String icon,
-      bool isSelected,
-      ) {
-    String formattedSum = _formatNumber(sum).replaceAll(',', ' ');
-    bool isNegative = sum < 0;
-    String absoluteSum = (isNegative ? "-" : "") + formattedSum.replaceFirst('-', '');
-    
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-      margin: EdgeInsets.only(bottom: 12.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        border: isSelected ? Border.all(color: const Color(0xFFB7E4C7), width: 1.5) : null,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
-            children: [
-              _itemItems(icon, isSelected),
-              SizedBox(width: 16.w),
-              Text(
-                text,
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 15.sp,
-                ),
-              ),
-            ],
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    absoluteSum,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16.sp,
-                    ),
-                  ),
-                  SizedBox(width: 4.w),
-                  Text(
-                    sumCurrencyType,
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 11.sp,
-                    ),
-                  ),
-                ],
-              ),
-              if (uzsEquivalent != null && sumCurrencyType != 'UZS')
-                Padding(
-                  padding: EdgeInsets.only(top: 4.h),
-                  child: Text(
-                    "${_formatNumber(uzsEquivalent).replaceAll(',', ' ')}.00 UZS",
-                    style: TextStyle(
-                      color: const Color(0xFF7C7777),
-                      fontWeight: FontWeight.w400,
-                      fontSize: 10.sp,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatNumber(double number) {
-    final formatter = NumberFormat('#,###', 'en_US');
-    return formatter.format(number.toInt());
-  }
-
-  Widget _itemItems(String icon, bool isSelected) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          height: 48.w,
-          width: 48.w,
-          decoration: const BoxDecoration(
-            color: Color(0xffFCE8F3),
-            shape: BoxShape.circle,
-          ),
-          child: Center(
-            child: SvgPicture.asset(
-              icon, 
-              width: 24.w, 
-              height: 24.w, 
-              colorFilter: const ColorFilter.mode(Color(0xFFE91E63), BlendMode.srcIn),
-            ),
-          ),
-        ),
-        if (isSelected)
-          Positioned(
-            top: 2,
-            right: 0,
-            child: Icon(Icons.star, color: const Color(0xFFE91E63), size: 14.w),
-          ),
-      ],
     );
   }
 }

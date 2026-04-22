@@ -2,7 +2,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
 import 'package:tejamkor/add_transactions/blocs/add_transactions_bloc.dart';
-import 'package:tejamkor/add_transactions/pages/add_transaction_view.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_bloc.dart';
 import 'package:tejamkor/auth/blocs/login/login_bloc.dart';
 import 'package:tejamkor/auth/blocs/sign_up/sign_up_bloc.dart';
@@ -15,6 +14,11 @@ import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
 import 'package:tejamkor/categories/data/repositories/currency_repository.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
 import 'package:tejamkor/core/theme_notifier.dart';
+import 'package:tejamkor/core/data/repos/account_repository.dart';
+import 'package:tejamkor/add_transactions/blocs/accounts/accounts_bloc.dart';
+import 'package:tejamkor/statistics/data/sources/statistics_api_source.dart';
+import 'package:tejamkor/statistics/data/repositories/statistics_repository.dart';
+import 'package:tejamkor/statistics/bloc/statistics_bloc.dart';
 
 List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => ThemeNotifier()),
@@ -23,6 +27,9 @@ List<SingleChildWidget> providers = [
   Provider(create: (context) => CategoryRepository(apiClient: context.read())),
   Provider(create: (context) => CurrencyRepository(context.read<ApiClient>())),
   Provider(create: (context) => TransactionRepository(context.read<ApiClient>())),
+  Provider(create: (context) => AccountRepository(apiClient: context.read<ApiClient>())),
+  Provider(create: (context) => StatisticsApiSource(context.read<ApiClient>().dio)),
+  Provider(create: (context) => StatisticsRepository(context.read<StatisticsApiSource>())),
   BlocProvider(
     create: (context) => CategoryBloc(repo: context.read<CategoryRepository>()),
   ),
@@ -43,6 +50,11 @@ List<SingleChildWidget> providers = [
   BlocProvider(
     create: (context) =>
         TransactionBloc(context.read<TransactionRepository>()),
-    child: AddTransactionView(),
+  ),
+  BlocProvider(
+    create: (context) => AccountsBloc(repository: context.read<AccountRepository>()),
+  ),
+  BlocProvider(
+    create: (context) => StatisticsBloc(context.read<StatisticsRepository>()),
   ),
 ];

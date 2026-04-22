@@ -11,6 +11,7 @@ import 'package:tejamkor/core/interceptor.dart';
 
 import 'api_constans.dart';
 import 'data/models/transactions/post_transactions.dart';
+import 'data/models/accounts/account_model.dart';
 
 class ApiClient {
   final Dio dio = Dio(BaseOptions(baseUrl: "https://www.tejamkor-ai.uz"))
@@ -175,6 +176,18 @@ class ApiClient {
     }
   }
 
+  Future<List<CurrencyModel>> getCurrencies() async {
+    final response = await dio.get('/api/transactions/currencies/');
+
+    if (response.statusCode == 200 && response.data is List) {
+      return (response.data as List)
+          .map((e) => CurrencyModel.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw Exception('Valyutalarni yuklashda xatolik yuz berdi');
+    }
+  }
+
   Future<UserCurrencyResponse> getUserCurrency() async {
     final response = await dio.get('/api/transactions/user-currency/');
 
@@ -185,12 +198,15 @@ class ApiClient {
     }
   }
 
-  Future<void> updateUserCurrency(int currencyId) async {
+  Future<void> updateUserCurrency(CurrencyModel currency) async {
     final response = await dio.patch(
       '/api/transactions/user-currency/',
-      data: {'currency': currencyId},
+      data: {
+        'currency': currency.id,
+        'currency_detail': currency.toJson(),
+      },
     );
-    if (response.statusCode != 200) {
+    if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Valyutani o\'zgartirishda xatolik yuz berdi');
     }
   }
@@ -227,6 +243,26 @@ class ApiClient {
         return 'Request cancelled.';
       default:
         return 'Network error: ${error.message}';
+    }
+  }
+
+  Future<List<AccountModel>> getAccounts() async {
+    try {
+      final response = await dio.get('/api/transactions/accounts/');
+
+      if (response.statusCode == 200) {
+        if (response.data is List) {
+          return (response.data as List)
+              .map((e) => AccountModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+        } else {
+          throw Exception('Accounts data format error');
+        }
+      } else {
+        throw Exception('Failed to load accounts: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 }

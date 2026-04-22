@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tejamkor/core/utils/icon_mapper.dart';
 
 class IncomeExpenseRow extends StatelessWidget {
   const IncomeExpenseRow({super.key});
@@ -50,10 +52,11 @@ class IncomeExpenseRow extends StatelessWidget {
         children: [
           Row(
             children: [
-              Icon(
-                isExpense ? Icons.trending_down : Icons.trending_up,
-                color: isExpense ? Colors.red : Colors.green,
-                size: 16.w,
+              SvgPicture.asset(
+                isExpense ? IconMapper.getTejamkorIcon("Xarajatlar") : IconMapper.getTejamkorIcon("Ish-haqi"),
+                colorFilter: ColorFilter.mode(isExpense ? Colors.red : Colors.green, BlendMode.srcIn),
+                width: 14.w,
+                height: 14.w,
               ),
               SizedBox(width: 4.w),
               Text(

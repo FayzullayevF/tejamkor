@@ -11,12 +11,14 @@ class BudgetRow extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          title,
-          style: TextStyle(
-            color: Color(0xff171C1D),
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
+        Expanded(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: Color(0xff171C1D),
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         TextButton(

@@ -12,17 +12,15 @@ class TotalContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 100.h,
+      constraints: BoxConstraints(minHeight: 100.h),
       padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 20.w),
       decoration: BoxDecoration(
         color: Color(0xffF0F4F5),
         borderRadius: BorderRadius.circular(24),
       ),
-      child: SizedBox(
-        height: 55.h,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
             Column(
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +69,6 @@ class TotalContainer extends StatelessWidget {
             ),
           ],
         ),
-      ),
     );
   }
 }

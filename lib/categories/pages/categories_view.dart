@@ -5,92 +5,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
 import 'package:tejamkor/categories/blocs/category/category_state.dart';
 import 'package:tejamkor/categories/widgets/category_card.dart';
+import 'package:tejamkor/core/utils/icon_mapper.dart';
 
 class ExpenseView extends StatelessWidget {
   const ExpenseView({super.key, required this.selectedIds, required this.onToggle});
 
   final Set<int> selectedIds;
   final Function(int) onToggle;
-  Widget _buildIcon(String iconStr, String categoryName) {
-    String path = "car.svg";
-    switch (categoryName.toLowerCase()) {
-      case "oziq-ovqat":
-      case "oziq ovqat":
-        path = "basket.svg";
-        break;
-      case "kiyim-kechak":
-      case "kiyinish":
-        path = "shirt.svg";
-        break;
-      case "jamoat transporti":
-      case "transport":
-        path = "bus.svg";
-        break;
-      case "taxi":
-      case "taksi":
-        path = "car.svg";
-        break;
-      case "sayohat":
-      case "sayohatlar":
-        path = "flight.svg";
-        break;
-      case "kommunal to'lovlar":
-        path = "payment.svg";
-        break;
-      case "sog'liq":
-      case "salomatlik":
-        path = "heart.svg";
-        break;
-      case "ta'lim":
-        path = "statistic.svg"; // Talim uchun alohida svg yoq bo'lsa
-        break;
-      case "ijara":
-        path = "home.svg";
-        break;
-      case "internet":
-        path = "wifi.svg";
-        break;
-      case "ovqatlanish":
-        path = "dish.svg";
-        break;
-      case "ko'ngilochar":
-        path = "tv.svg";
-        break;
-      case "sport":
-        path = "sport.svg";
-        break;
-      case "xizmatlar":
-        path = "clock.svg";
-        break;
-      case "jarimalar":
-        path = "warning.svg";
-        break;
-      case "mashina":
-        path = "taxi.svg";
-        break;
-      case "o'tkazmalar":
-        path = "send.svg";
-        break;
-      case "xayriya":
-        path = "full_heart.svg";
-        break;
-      case "bolalar":
-        path = "child.svg";
-        break;
-      case "o'yinlar":
-        path = "play.svg";
-        break;
-      case "kosmetikalar":
-        path = "cosmetic.svg";
-        break;
-      case "yoqilg'i":
-        path = "fuel.svg";
-        break;
-      default:
-        // Nom topilmasa terminalni qizartirmaslik uchun aniq mavjud bo'lgan "basket.svg" ni qaytaramiz
-        path = "basket.svg";
-    }
-    return SvgPicture.asset("assets/icons/$path");
+  Widget _buildIcon(String categoryName) {
+    return SvgPicture.asset(IconMapper.getTejamkorIcon(categoryName));
   }
 
   @override
@@ -125,7 +48,7 @@ class ExpenseView extends StatelessWidget {
             final title = item.name;
             return CategoryCard(
               title: title,
-              icon: _buildIcon(item.icon, title),
+              icon: _buildIcon(title),
               isSelected: selectedIds.contains(item.id),
               onTap: () {
                 onToggle(item.id);

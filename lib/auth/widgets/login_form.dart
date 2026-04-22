@@ -108,72 +108,74 @@ class _LoginFormBodyState extends State<_LoginFormBody> {
       },
       child: Form(
         key: _formKey,
-        child: Column(
-          children: [
-            SizedBox(height: 20.h),
-            AuthTextField(
-              controller: bloc.emailController,
-              type: AuthFieldType.email,
-              labelText: "Email pochtangiz",
-              hintText: "Misol uchun: user@gmail.com",
-            ),
-            SizedBox(height: 10.h),
-            AuthTextField(
-              controller: bloc.passwordController,
-              type: AuthFieldType.password,
-              labelText: "Parolingiz",
-              hintText: "********",
-              validatorOverride: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return "Parolni kiriting";
-                }
-                return null;
-              },
-            ),
-            SizedBox(height: 10.h),
-            Row(
-              children: [
-                Checkbox(
-                  shape: const CircleBorder(),
-                  value: rememberMe,
-                  onChanged: (v) async {
-                    setState(() {
-                      rememberMe = v ?? false;
-                    });
-                    await _saveOrClear();
-                  },
-                ),
-                Text("Eslab qolish", style: TextStyle(fontSize: 14.sp)),
-                const Spacer(),
-                TextButton(
-                  onPressed: () {
-                    context.push(Routers.forgotPassword);
-                  },
-                  child: Text(
-                    "Parolni unutdingizmi?",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 14.sp,
-                      foreground: Paint()
-                        ..shader = LinearGradient(
-                          colors: [
-                            AppColors.cyanAccent,
-                            AppColors.darkNavy.withValues(alpha: 0.5),
-                          ],
-                        ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              SizedBox(height: 20.h),
+              AuthTextField(
+                controller: bloc.emailController,
+                type: AuthFieldType.email,
+                labelText: "Email pochtangiz",
+                hintText: "Misol uchun: user@gmail.com",
+              ),
+              SizedBox(height: 10.h),
+              AuthTextField(
+                controller: bloc.passwordController,
+                type: AuthFieldType.password,
+                labelText: "Parolingiz",
+                hintText: "********",
+                validatorOverride: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return "Parolni kiriting";
+                  }
+                  return null;
+                },
+              ),
+              SizedBox(height: 10.h),
+              Row(
+                children: [
+                  Checkbox(
+                    shape: const CircleBorder(),
+                    value: rememberMe,
+                    onChanged: (v) async {
+                      setState(() {
+                        rememberMe = v ?? false;
+                      });
+                      await _saveOrClear();
+                    },
+                  ),
+                  Text("Eslab qolish", style: TextStyle(fontSize: 14.sp)),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () {
+                      context.push(Routers.forgotPassword);
+                    },
+                    child: Text(
+                      "Parolni unutdingizmi?",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14.sp,
+                        foreground: Paint()
+                          ..shader = LinearGradient(
+                            colors: [
+                              AppColors.cyanAccent,
+                              AppColors.darkNavy.withValues(alpha: 0.5),
+                            ],
+                          ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16.h),
-            AppButton(
-              height: 73.h,
-              weight: 380.w,
-              title: "Tizimga kirish",
-              voidCallback: _submit,
-            ),
-          ],
+                ],
+              ),
+              SizedBox(height: 16.h),
+              AppButton(
+                height: 73.h,
+                weight: 380.w,
+                title: "Tizimga kirish",
+                voidCallback: _submit,
+              ),
+            ],
+          ),
         ),
       ),
     );

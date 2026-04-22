@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:tejamkor/categories/data/models/category_model.dart';
+import 'package:tejamkor/core/utils/icon_mapper.dart';
 import 'package:tejamkor/categories/data/repositories/category_repository.dart';
 
 class TransactionCategoriesView extends StatefulWidget {
@@ -45,86 +46,9 @@ class _TransactionCategoriesViewState extends State<TransactionCategoriesView> {
     }
   }
 
-  Widget _buildIcon(String iconStr, String categoryName, {Color? color}) {
-    String path = "car.svg";
-    switch (categoryName.toLowerCase()) {
-      case "oziq-ovqat":
-      case "oziq ovqat":
-        path = "basket.svg";
-        break;
-      case "kiyim-kechak":
-      case "kiyinish":
-        path = "shirt.svg";
-        break;
-      case "jamoat transporti":
-      case "transport":
-        path = "bus.svg";
-        break;
-      case "taxi":
-      case "taksi":
-        path = "car.svg";
-        break;
-      case "sayohat":
-      case "sayohatlar":
-        path = "flight.svg";
-        break;
-      case "kommunal to'lovlar":
-        path = "payment.svg";
-        break;
-      case "sog'liq":
-      case "salomatlik":
-        path = "heart.svg";
-        break;
-      case "ta'lim":
-        path = "statistic.svg";
-        break;
-      case "ijara":
-        path = "home.svg";
-        break;
-      case "internet":
-        path = "wifi.svg";
-        break;
-      case "ovqatlanish":
-        path = "dish.svg";
-        break;
-      case "ko'ngilochar":
-        path = "tv.svg";
-        break;
-      case "sport":
-        path = "sport.svg";
-        break;
-      case "xizmatlar":
-        path = "clock.svg";
-        break;
-      case "jarimalar":
-        path = "warning.svg";
-        break;
-      case "mashina":
-        path = "taxi.svg";
-        break;
-      case "o'tkazmalar":
-        path = "send.svg";
-        break;
-      case "xayriya":
-        path = "full_heart.svg";
-        break;
-      case "bolalar":
-        path = "child.svg";
-        break;
-      case "o'yinlar":
-        path = "play.svg";
-        break;
-      case "kosmetikalar":
-        path = "cosmetic.svg";
-        break;
-      case "yoqilg'i":
-        path = "fuel.svg";
-        break;
-      default:
-        path = "basket.svg";
-    }
+  Widget _buildIcon(String categoryName, {Color? color}) {
     return SvgPicture.asset(
-      "assets/icons/$path",
+      IconMapper.getTejamkorIcon(categoryName),
       width: 28.w,
       height: 28.w,
       colorFilter: color != null
@@ -191,7 +115,6 @@ class _TransactionCategoriesViewState extends State<TransactionCategoriesView> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         _buildIcon(
-                          item.icon,
                           item.name,
                           color: const Color(0xFF058F9D),
                         ),

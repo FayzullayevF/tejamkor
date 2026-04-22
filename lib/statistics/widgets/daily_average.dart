@@ -1,9 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 
 class DailyAverage extends StatelessWidget {
-  const DailyAverage({super.key});
+  final double averageAmount;
+  final double dailyLimit;
+  final String currency;
+
+  const DailyAverage({
+    super.key,
+    required this.averageAmount,
+    required this.dailyLimit,
+    required this.currency,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +40,7 @@ class DailyAverage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   "KUNLIK O‘RTACHA",
                   style: TextStyle(
                     fontSize: 12,
@@ -39,14 +49,26 @@ class DailyAverage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  "\$142.85",
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    "$currency${NumberFormat('#,###.00').format(averageAmount)}",
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
                 ),
                 SizedBox(height: 4.h),
-                Text(
-                  "\$150 kunlik sarflash limiti",
-                  style: TextStyle(fontSize: 12, color: Color(0xff006673)),
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    "$currency${NumberFormat('#,###.00').format(dailyLimit)} kunlik sarflash limiti",
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xff006673),
+                    ),
+                  ),
                 ),
               ],
             ),

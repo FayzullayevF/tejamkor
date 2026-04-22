@@ -74,6 +74,7 @@ class CustomNavBar extends StatelessWidget {
               ],
             ),
             child: FloatingActionButton(
+              heroTag: null,
               onPressed: () {
                 context.push(Routers.addTransaction);
               },

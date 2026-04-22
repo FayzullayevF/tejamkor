@@ -37,7 +37,7 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
     final previousState = state;
     emit(state.copyWith(status: CurrencyStatus.updating));
     try {
-      await _repository.updateUserCurrency(event.currencyId);
+      await _repository.updateUserCurrency(event.currency);
       emit(state.copyWith(status: CurrencyStatus.updated));
       // Option: refetch the currency logic
       add(CurrencyFetched());

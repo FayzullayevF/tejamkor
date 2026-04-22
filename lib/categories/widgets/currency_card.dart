@@ -33,7 +33,7 @@ class CurrencyCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 366.w,
-        height: 73.h,
+        constraints: BoxConstraints(minHeight: 73.h),
         padding: EdgeInsets.symmetric(vertical: 10.h, horizontal: 10.w),
         decoration: BoxDecoration(
           color: bgColor,
@@ -48,30 +48,31 @@ class CurrencyCard extends StatelessWidget {
               children: [
                 SvgPicture.asset(flagSvg, width: 53.w, height: 53.h),
                 SizedBox(width: 12.w),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          title,
-                          style: TextStyle(
+                Flexible(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
                             color: Colors.black,
                             fontSize: 20,
                             fontWeight: FontWeight.w400,
-                            height: 1.2
-                          ),
-                        ),
-                        SizedBox(height: 2.h),
-                        Text(
-                          subtitle,
-                          style: TextStyle(
+                            height: 1.2),
+                      ),
+                      SizedBox(height: 2.h),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
                             color: Color(0xff7C7777),
                             fontSize: 20,
                             fontWeight: FontWeight.w600,
-                            height: 1.2
-                          ),
-                        ),
-                      ],
-                    ),
+                            height: 1.2),
+                      ),
+                    ],
+                  ),
+                ),
 
 
 

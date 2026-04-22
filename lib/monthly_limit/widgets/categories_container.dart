@@ -31,8 +31,8 @@ class CategoriesContainer extends StatelessWidget {
     final bool isDisabled = maxLimit <= 0 && value <= 0;
 
     return Container(
-      height: height,
       width: double.infinity,
+      constraints: BoxConstraints(minHeight: height),
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
       decoration: BoxDecoration(
         color: Colors.white,

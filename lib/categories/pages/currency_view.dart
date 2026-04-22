@@ -86,7 +86,7 @@ class _CategoriesViewState extends State<CategoriesView> {
                           selectedCurrencyCode = currency.code;
                         });
                         context.read<CurrencyBloc>().add(
-                          CurrencyUpdated(currency.id),
+                          CurrencyUpdated(currency),
                         );
                       },
                     ),

@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:tejamkor/widgets/additional_app_bar.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
+
 import 'package:tejamkor/widgets/custom_navi_bar.dart';
+import 'package:tejamkor/core/utils/icon_mapper.dart';
+import 'package:tejamkor/add_transactions/blocs/add_transactions_bloc.dart';
+import 'package:tejamkor/add_transactions/blocs/add_transactions_event.dart';
+import 'package:tejamkor/add_transactions/blocs/add_transactions_state.dart';
+import 'package:tejamkor/core/data/models/transactions/post_transactions.dart';
+
+import '../widgets/history_search_bar.dart';
+import '../widgets/transaction_card.dart';
 
 class TransactionHistoryView extends StatefulWidget {
   const TransactionHistoryView({super.key});
@@ -11,96 +22,190 @@ class TransactionHistoryView extends StatefulWidget {
   State<TransactionHistoryView> createState() => _TransactionHistoryViewState();
 }
 
-class _TransactionHistoryViewState extends State<TransactionHistoryView> {
+class _TransactionHistoryViewState extends State<TransactionHistoryView>
+    with SingleTickerProviderStateMixin {
   int currentIndex = 1;
-  int selectedChipIndex = 0;
+  late TabController _tabController;
+  String _searchQuery = '';
+
+  // Hisoblangan summalar — tab o'zgarganda top card yangilanishi uchun
+  double _expenseTotal = 0;
+  double _incomeTotal = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(() => setState(() {}));
+    context.read<TransactionBloc>().add(GetAllTransactionsEvent());
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  // Tranzaksiyalarni sana bo'yicha guruhlash
+  Map<String, List<TransactionModel>> _groupByDate(
+    List<TransactionModel> list,
+  ) {
+    final Map<String, List<TransactionModel>> grouped = {};
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = today.subtract(const Duration(days: 1));
+
+    for (final tx in list) {
+      final txDate = DateTime(
+        tx.dateTime.year,
+        tx.dateTime.month,
+        tx.dateTime.day,
+      );
+      String label;
+      if (txDate == today) {
+        label = 'BUGUN';
+      } else if (txDate == yesterday) {
+        label = 'KECHA';
+      } else {
+        label = DateFormat('d MMMM, yyyy').format(tx.dateTime);
+      }
+      grouped.putIfAbsent(label, () => []).add(tx);
+    }
+    return grouped;
+  }
+
+  // Qidiruv filtri
+  List<TransactionModel> _applySearch(List<TransactionModel> list) {
+    if (_searchQuery.isEmpty) return list;
+    final q = _searchQuery.toLowerCase();
+    return list
+        .where(
+          (tx) =>
+              (tx.categoryName ?? '').toLowerCase().contains(q) ||
+              tx.note.toLowerCase().contains(q),
+        )
+        .toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
       backgroundColor: const Color(0xffF3F3F3),
-      body: SafeArea(
-        bottom: false,
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildTopCard(),
-              SizedBox(height: 24.h),
-              _buildSearchBar(),
-              SizedBox(height: 20.h),
-              _buildFilters(),
-              SizedBox(height: 10.h),
-              _buildDateHeader("BUGUN"),
-              _buildTransactionItemSVG(
-                iconSrc: "assets/icons/green_shop.svg",
-                iconBgColor: const Color(0xffE0F7FA),
-                title: "MX Master 4",
-                subtext: "Texnika • 2:14 PM",
-                amount: "-\$1,299.00",
-                isIncome: false,
-              ),
-              _buildTransactionItemSVG(
-                iconSrc: "assets/icons/brown_dish.svg",
-                iconBgColor: const Color(0xffFFF4E5),
-                title: "Turk koftes",
-                subtext: "Ovqat & Ichimlik • 10:45 AM",
-                amount: "-\$18.50",
-                isIncome: false,
-              ),
-              _buildDateHeader("KECHA"),
-              _buildTransactionItemSVG(
-                iconSrc: "assets/icons/green_salary.svg",
-                iconBgColor: const Color(0xffD1FAE5),
-                title: "Oylik maosh",
-                subtext: "Daromad • 10:45 AM",
-                amount: "+\$18.50",
-                isIncome: true,
-              ),
-              _buildTransactionItemSVG(
-                iconSrc: "assets/icons/bus_car.svg",
-                iconBgColor: const Color(0xffE0F7FA),
-                title: "Yandex Taxi",
-                subtext: "Transport • 06:30 PM",
-                amount: "-\$24.20",
-                isIncome: false,
-              ),
-              _buildTransactionItemIcon(
-                iconData: Icons.fitness_center_rounded,
-                iconColor: const Color(0xff008C9E),
-                iconBgColor: const Color(0xffE0F7FA),
-                title: "Equinox Gym",
-                subtext: "Sog'liq • 08:15 AM",
-                amount: "-\$150.00",
-                isIncome: false,
-              ),
-              SizedBox(height: 120.h), // space for bottom nav bar
-            ],
-          ),
-        ),
+      body: BlocBuilder<TransactionBloc, TransactionState>(
+        builder: (context, state) {
+          List<TransactionModel> allList = [];
+          bool isLoading = false;
+          String? errorMsg;
+
+          if (state is TransactionsLoading) {
+            isLoading = true;
+          } else if (state is TransactionsLoadSuccess) {
+            allList = state.transactions;
+          } else if (state is TransactionError) {
+            errorMsg = state.message;
+          }
+
+          // Type bo'yicha ajratish va qidiruv
+          final expenseList = _applySearch(
+            allList.where((t) => t.type == 'expense').toList(),
+          );
+          final incomeList = _applySearch(
+            allList.where((t) => t.type == 'income').toList(),
+          );
+
+          // Jami summalar
+          _expenseTotal = expenseList.fold(
+            0.0,
+            (s, t) => s + (double.tryParse(t.amount) ?? 0),
+          );
+          _incomeTotal = incomeList.fold(
+            0.0,
+            (s, t) => s + (double.tryParse(t.amount) ?? 0),
+          );
+
+          return SafeArea(
+            bottom: false,
+            child: Column(
+              children: [
+                // ── Top summary card ──
+                _buildTopCard(),
+
+                SizedBox(height: 16.h),
+
+                // ── Tab (Xarajat / Daromad) ──
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  child: _buildTabBar(),
+                ),
+
+                SizedBox(height: 16.h),
+
+                // ── Search ──
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24.w),
+                  child: HistorySearchBar(
+                    onChanged: (q) => setState(() => _searchQuery = q),
+                  ),
+                ),
+
+                SizedBox(height: 16.h),
+
+                // ── Tranzaksiya ro'yxati ──
+                Expanded(
+                  child: isLoading
+                      ? const Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF006673),
+                          ),
+                        )
+                      : errorMsg != null
+                      ? _buildError(errorMsg)
+                      : TabBarView(
+                          controller: _tabController,
+                          children: [
+                            _buildTransactionList(expenseList, isIncome: false),
+                            _buildTransactionList(incomeList, isIncome: true),
+                          ],
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
       bottomNavigationBar: CustomNavBar(
         currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
+        onTap: (index) => setState(() => currentIndex = index),
       ),
     );
   }
 
+  // ─────────────────── Top card ───────────────────
   Widget _buildTopCard() {
-    return Container(
-      height: 180.h,
+    final isExpTab = _tabController.index == 0;
+    final total = isExpTab ? _expenseTotal : _incomeTotal;
+    final label = isExpTab ? "Oylik xarajat" : "Oylik daromad";
+    final gradColors = isExpTab
+        ? [const Color(0xFF261214), const Color(0xFFE53945)]
+        : [const Color(0xFF0A2418), const Color(0xFF0FBC5F)];
+
+    // Global valyuta belgisini olamiz
+    final currencyState = context.watch<CurrencyBloc>().state;
+    final globalSymbol =
+        currencyState.response?.currencyDetail?.symbol ?? 'so\'m';
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      margin: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 0),
+      height: 130.h,
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 24.h),
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24.r),
-        gradient: const LinearGradient(
-          colors: [Color(0xFF261214), Color(0xFFE53945)],
+        gradient: LinearGradient(
+          colors: gradColors,
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -109,67 +214,18 @@ class _TransactionHistoryViewState extends State<TransactionHistoryView> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Oylik xarajat",
+            label,
             style: TextStyle(color: Colors.white70, fontSize: 13.sp),
           ),
-          SizedBox(height: 8.h),
-          Text(
-            "\$4,285.50",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 36.sp,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const Spacer(),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(20.r),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.trending_up, color: Colors.white, size: 14.sp),
-                SizedBox(width: 4.w),
-                Text(
-                  "12.4% o'tgan oydan ko'proq",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      height: 52.h,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(26.r),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.search, color: Colors.grey, size: 24.sp),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: "Tranzaksiyalarni qidirish",
-                hintStyle: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontSize: 14.sp,
-                ),
-                border: InputBorder.none,
+          SizedBox(height: 6.h),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              _formatAmount(total, symbol: globalSymbol),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30.sp,
+                fontWeight: FontWeight.bold,
               ),
             ),
           ),
@@ -178,171 +234,197 @@ class _TransactionHistoryViewState extends State<TransactionHistoryView> {
     );
   }
 
-  Widget _buildFilters() {
-    final filters = [
-      "Barchasi",
-      "Shopping",
-      "Ovqatlanish",
-      "Yandex Taxi",
-    ]; // 🔥 YANGI
-
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        children: List.generate(filters.length, (index) {
-          return Padding(
-            padding: EdgeInsets.only(right: 10.w),
-            child: _buildChip(
-              filters[index],
-              selectedChipIndex == index, // 🔥 SHU QO‘SHILDI
-              () {
-                setState(() {
-                  selectedChipIndex = index; // 🔥 SHU QO‘SHILDI
-                });
-              },
-            ),
-          );
-        }),
+  // ─────────────────── Tab bar ───────────────────
+  Widget _buildTabBar() {
+    return Container(
+      height: 44.h,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30.r),
+      ),
+      child: TabBar(
+        controller: _tabController,
+        indicator: BoxDecoration(
+          color: const Color(0xFF006673),
+          borderRadius: BorderRadius.circular(30.r),
+        ),
+        indicatorSize: TabBarIndicatorSize.tab,
+        labelColor: Colors.white,
+        unselectedLabelColor: Colors.black54,
+        labelStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 14.sp,
+          fontWeight: FontWeight.w500,
+        ),
+        dividerColor: Colors.transparent,
+        tabs: const [
+          Tab(text: "Xarajat"),
+          Tab(text: "Daromad"),
+        ],
       ),
     );
   }
 
-  Widget _buildChip(String text, bool isSelected, VoidCallback callBack) {
-    return GestureDetector(
-      onTap: callBack,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF006673) : Colors.white,
-          borderRadius: BorderRadius.circular(9999),
+  // ─────────────────── Transaction list ───────────────────
+  Widget _buildTransactionList(
+    List<TransactionModel> list, {
+    required bool isIncome,
+  }) {
+    if (list.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isIncome
+                  ? Icons.account_balance_wallet_outlined
+                  : Icons.receipt_long_outlined,
+              size: 64.w,
+              color: Colors.grey.shade300,
+            ),
+            SizedBox(height: 16.h),
+            Text(
+              isIncome ? "Daromadlar topilmadi" : "Xarajatlar topilmadi",
+              style: TextStyle(
+                color: Colors.grey.shade400,
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: isSelected ? Colors.white : Colors.black87,
-            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            fontSize: 14,
-          ),
+      );
+    }
+
+    // Eng yangi sana yuqorida
+    final sorted = List<TransactionModel>.from(list)
+      ..sort((a, b) => b.dateTime.compareTo(a.dateTime));
+
+    final grouped = _groupByDate(sorted);
+    final sortedKeys = grouped.keys.toList();
+
+    return ListView.builder(
+      padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 120.h),
+      physics: const BouncingScrollPhysics(),
+      itemCount: sortedKeys.length,
+      itemBuilder: (context, groupIdx) {
+        final dateLabel = sortedKeys[groupIdx];
+        final txList = grouped[dateLabel]!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDateHeader(dateLabel),
+            ...txList.map((tx) => _buildTxCard(tx, isIncome)),
+          ],
+        );
+      },
+    );
+  }
+
+  // ─────────────────── Single transaction card ───────────────────
+  // ─────────────────── Single transaction card ───────────────────
+  Widget _buildTxCard(TransactionModel tx, bool isIncome) {
+    final catName = tx.categoryName ?? '';
+    final timeStr = DateFormat('HH:mm').format(tx.dateTime);
+    final amt = double.tryParse(tx.amount) ?? 0.0;
+
+    // Model dagi symbol dan foydalanamiz
+    final symbol = tx.currencySymbol ?? 'so\'m';
+    final amtStr = isIncome
+        ? '+${_formatAmount(amt, symbol: symbol)}'
+        : '-${_formatAmount(amt, symbol: symbol)}';
+
+    final displayTitle = tx.note.isNotEmpty ? tx.note : catName;
+
+    return TransactionCard(
+      iconWidget: SvgPicture.asset(
+        IconMapper.getTejamkorIcon(catName),
+        width: 24.w,
+        height: 24.w,
+        colorFilter: ColorFilter.mode(
+          isIncome ? const Color(0xFF0FBC5F) : const Color(0xFF006673),
+          BlendMode.srcIn,
         ),
       ),
+      iconBgColor: isIncome
+          ? const Color(0xffD1FAE5)
+          : _getCategoryColor(catName),
+      title: displayTitle.isNotEmpty
+          ? displayTitle
+          : (isIncome ? 'Daromad' : 'Xarajat'),
+      subtext: '$catName • $timeStr',
+      amount: amtStr,
+      isIncome: isIncome,
     );
+  }
+
+  // ─────────────────── Helpers ───────────────────
+  Color _getCategoryColor(String catName) {
+    final lower = catName.toLowerCase();
+    if (lower.contains('oziq') || lower.contains('ovqat')) {
+      return const Color(0xffFFF4E5);
+    } else if (lower.contains('transport') || lower.contains('taksi')) {
+      return const Color(0xffE0F7FA);
+    } else if (lower.contains('salomatlik') || lower.contains('sport')) {
+      return const Color(0xffFCE4EC);
+    } else if (lower.contains('sayohat')) {
+      return const Color(0xffE8EAF6);
+    } else if (lower.contains('kiyinish') || lower.contains('kosmetika')) {
+      return const Color(0xffFFF0F5);
+    }
+    return const Color(0xffE8F5E9);
   }
 
   Widget _buildDateHeader(String text) {
     return Padding(
-      padding: EdgeInsets.only(top: 24.h, bottom: 12.h),
+      padding: EdgeInsets.only(top: 20.h, bottom: 10.h),
       child: Text(
         text,
         style: TextStyle(
           color: Colors.grey.shade600,
           fontSize: 12.sp,
           fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
+          letterSpacing: 0.8,
         ),
       ),
     );
   }
 
-  Widget _buildTransactionItemSVG({
-    required String iconSrc,
-    required Color iconBgColor,
-    required String title,
-    required String subtext,
-    required String amount,
-    required bool isIncome,
-  }) {
-    return _buildTransactionCard(
-      iconWidget: SvgPicture.asset(iconSrc, width: 24.w, height: 24.h),
-      iconBgColor: iconBgColor,
-      title: title,
-      subtext: subtext,
-      amount: amount,
-      isIncome: isIncome,
-    );
-  }
-
-  Widget _buildTransactionItemIcon({
-    required IconData iconData,
-    required Color iconColor,
-    required Color iconBgColor,
-    required String title,
-    required String subtext,
-    required String amount,
-    required bool isIncome,
-  }) {
-    return _buildTransactionCard(
-      iconWidget: Icon(iconData, color: iconColor, size: 24.w),
-      iconBgColor: iconBgColor,
-      title: title,
-      subtext: subtext,
-      amount: amount,
-      isIncome: isIncome,
-    );
-  }
-
-  Widget _buildTransactionCard({
-    required Widget iconWidget,
-    required Color iconBgColor,
-    required String title,
-    required String subtext,
-    required String amount,
-    required bool isIncome,
-  }) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 12.h),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(24.r),
-      ),
-      child: Row(
+  Widget _buildError(String? msg) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 52.w,
-            height: 52.w,
-            decoration: BoxDecoration(
-              color: iconBgColor,
-              shape: BoxShape.circle,
-            ),
-            alignment: Alignment.center,
-            child: iconWidget,
-          ),
-          SizedBox(width: 16.w),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                    color: Colors.black87,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-                Text(
-                  subtext,
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Icon(Icons.wifi_off_rounded, size: 56.w, color: Colors.grey.shade300),
+          SizedBox(height: 12.h),
           Text(
-            amount,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              fontSize: 16,
-              color: isIncome ? const Color(0xFF0FBC5F) : Colors.black87,
+            "Ma'lumotlarni yuklab bo'lmadi",
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 15.sp),
+          ),
+          if (msg != null) ...[
+            SizedBox(height: 6.h),
+            Text(
+              msg,
+              style: TextStyle(color: Colors.grey.shade400, fontSize: 11.sp),
+              textAlign: TextAlign.center,
+            ),
+          ],
+          SizedBox(height: 8.h),
+          TextButton(
+            onPressed: () =>
+                context.read<TransactionBloc>().add(GetAllTransactionsEvent()),
+            child: const Text(
+              "Qayta urinish",
+              style: TextStyle(color: Color(0xFF006673)),
             ),
           ),
         ],
       ),
     );
+  }
+
+  String _formatAmount(double amount, {String symbol = 'so\'m'}) {
+    final formatter = NumberFormat('#,###', 'en_US');
+    return '${formatter.format(amount.toInt()).replaceAll(',', ' ')} $symbol';
   }
 }

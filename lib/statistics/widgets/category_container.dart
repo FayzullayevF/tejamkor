@@ -38,6 +38,14 @@ class CategoryContainer extends StatelessWidget {
         : Colors.grey;
 
     final percentPrefix = isPositive ? "+" : "";
+    
+    // 🔥 Icon handling: check if it's network or asset
+    Widget iconWidget;
+    if (icon.startsWith('http')) {
+      iconWidget = SvgPicture.network(icon, height: 22);
+    } else {
+      iconWidget = SvgPicture.asset(icon, height: 22);
+    }
 
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
@@ -56,7 +64,7 @@ class CategoryContainer extends StatelessWidget {
               color: containerColor.withValues(alpha: 0.15),
               shape: BoxShape.circle,
             ),
-            child: Center(child: SvgPicture.asset(icon, height: 22)),
+            child: Center(child: iconWidget),
           ),
 
           SizedBox(width: 12.w),
@@ -77,6 +85,8 @@ class CategoryContainer extends StatelessWidget {
                         children: [
                           Text(
                             title,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                             style: TextStyle(
                               fontSize: 16.sp,
                               fontWeight: FontWeight.w700,
@@ -85,6 +95,8 @@ class CategoryContainer extends StatelessWidget {
                           SizedBox(height: 4.h),
                           Text(
                             subtitle,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                             style: TextStyle(
                               fontSize: 12.sp,
                               color: Colors.grey,
@@ -95,26 +107,31 @@ class CategoryContainer extends StatelessWidget {
                     ),
 
                     // 💰 AMOUNT + %
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          "\$${NumberFormat('#,###.00').format(amount)}",
-                          style: TextStyle(
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.w700,
+                    SizedBox(width: 8.w),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerRight,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            "\$${NumberFormat('#,###.00').format(amount)}",
+                            style: TextStyle(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Text(
-                          "$percentPrefix$percent%",
-                          style: TextStyle(
-                            fontSize: 10.sp,
-                            fontWeight: FontWeight.w700,
-                            color: percentColor,
+                          SizedBox(height: 4.h),
+                          Text(
+                            "$percentPrefix$percent%",
+                            style: TextStyle(
+                              fontSize: 10.sp,
+                              fontWeight: FontWeight.w700,
+                              color: percentColor,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -126,6 +143,8 @@ class CategoryContainer extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                   child: LayoutBuilder(
                     builder: (context, constraints) {
+                      // Adjust progress if > 1.0
+                      final adjustedProgress = progress > 1 ? progress / 100 : progress;
                       return Stack(
                         children: [
                           // background
@@ -138,7 +157,7 @@ class CategoryContainer extends StatelessWidget {
                           // progress
                           Container(
                             height: 6.h,
-                            width: constraints.maxWidth * progress,
+                            width: constraints.maxWidth * adjustedProgress.clamp(0.0, 1.0),
                             color: sliderColor,
                           ),
                         ],

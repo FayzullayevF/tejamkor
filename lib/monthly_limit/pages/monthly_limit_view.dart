@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tejamkor/core/utils/icon_mapper.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -77,40 +78,8 @@ class _MonthlyLimitViewState extends State<MonthlyLimitView> {
      }
    }
 
-  Widget _buildIcon(String iconStr, String categoryName) {
-    String path = "car.svg"; 
-    switch (categoryName.toLowerCase()) {
-      case "oziq-ovqat":
-      case "oziq ovqat": path = "basket.svg"; break;
-      case "kiyim-kechak":
-      case "kiyinish": path = "shirt.svg"; break;
-      case "jamoat transporti":
-      case "transport": path = "bus.svg"; break;
-      case "taxi":
-      case "taksi": path = "car.svg"; break;
-      case "sayohat":
-      case "sayohatlar": path = "flight.svg"; break;
-      case "kommunal to'lovlar": path = "payment.svg"; break;
-      case "sog'liq":
-      case "salomatlik": path = "heart.svg"; break;
-      case "ta'lim": path = "statistic.svg"; break;
-      case "ijara": path = "home.svg"; break;
-      case "internet": path = "wifi.svg"; break;
-      case "ovqatlanish": path = "dish.svg"; break;
-      case "ko'ngilochar": path = "tv.svg"; break;
-      case "sport": path = "sport.svg"; break;
-      case "xizmatlar": path = "clock.svg"; break;
-      case "jarimalar": path = "warning.svg"; break;
-      case "mashina": path = "taxi.svg"; break;
-      case "o'tkazmalar": path = "send.svg"; break;
-      case "xayriya": path = "full_heart.svg"; break;
-      case "bolalar": path = "child.svg"; break;
-      case "o'yinlar": path = "play.svg"; break;
-      case "kosmetikalar": path = "cosmetic.svg"; break;
-      case "yoqilg'i": path = "fuel.svg"; break;
-      default: path = "basket.svg";
-    }
-    return SvgPicture.asset("assets/icons/$path");
+  Widget _buildIcon(String categoryName) {
+    return SvgPicture.asset(IconMapper.getTejamkorIcon(categoryName));
   }
 
   @override
@@ -179,7 +148,7 @@ class _MonthlyLimitViewState extends State<MonthlyLimitView> {
 
                         return CategoriesContainer(
                           height: 145.h,
-                          icon: _buildIcon(cat.icon, cat.name),
+                          icon: _buildIcon(cat.name),
                           title: cat.name,
                           subtitle: "Oylik xarajatlar", // Using static string as there's no subtitle in the model
                           value: _categoryValues[index],

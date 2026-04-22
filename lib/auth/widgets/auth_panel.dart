@@ -85,22 +85,24 @@ class AuthPanel extends StatelessWidget {
                   color: Colors.white,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(34)),
                 ),
-                child: Column(
-                  children: [
-                    AuthSegmented(isLogin: isLogin, onChanged: onChanged),
-                    Expanded(
-                      child: AnimatedSwitcher(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AuthSegmented(isLogin: isLogin, onChanged: onChanged),
+                      AnimatedSwitcher(
                         duration: Duration(milliseconds: 160),
                         layoutBuilder: (currentChild, previousChildren) {
                           return Stack(
                             alignment: Alignment.topCenter,
-                            children: [...previousChildren, ?currentChild],
+                            children: [...previousChildren, if (currentChild != null) currentChild],
                           );
                         },
                         child: child,
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

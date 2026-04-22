@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
 import 'package:tejamkor/categories/blocs/category/category_state.dart';
 import 'package:tejamkor/categories/widgets/category_card.dart';
+import 'package:tejamkor/core/utils/icon_mapper.dart';
 
 class IncomeView extends StatelessWidget {
   const IncomeView({super.key, required this.selectedIds, required this.onToggle});
@@ -12,23 +13,8 @@ class IncomeView extends StatelessWidget {
   final Set<int> selectedIds;
   final Function(int) onToggle;
 
-  Widget _buildIcon(String iconStr, String categoryName) {
-    String path = "wallet.svg";
-    switch (categoryName.toLowerCase()) {
-      case "avans": path = "dollar.svg"; break;
-      case "ish haqi": path = "salary.svg"; break;
-      case "keshbek": path = "percent.svg"; break;
-      case "pensiya": path = "pension.svg"; break;
-      case "invetitsiya":
-      case "investitsiya": path = "statistic.svg"; break;
-      case "amonatlar":
-      case "omonatlar": path = "deposit.svg"; break;
-      case "kredit": path = "wallet.svg"; break;
-      case "qo'shimcha daromad": path = "additional.svg"; break;
-      case "o'tkazmalar": path = "pilot.svg"; break;
-      default: path = "wallet.svg";
-    }
-    return SvgPicture.asset("assets/icons/$path");
+  Widget _buildIcon(String categoryName) {
+    return SvgPicture.asset(IconMapper.getTejamkorIcon(categoryName));
   }
 
   @override
@@ -66,7 +52,7 @@ class IncomeView extends StatelessWidget {
                   final title = item.name;
                   return CategoryCard(
                     title: title,
-                    icon: _buildIcon(item.icon, title),
+                    icon: _buildIcon(title),
                     isSelected: selectedIds.contains(item.id),
                     onTap: () {
                       onToggle(item.id);

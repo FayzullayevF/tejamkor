@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class CategoryByWeekMonthYear extends StatefulWidget {
-  const CategoryByWeekMonthYear({super.key});
+  final ValueChanged<String> onChanged;
+  final String currentFilter;
+
+  const CategoryByWeekMonthYear({
+    super.key,
+    required this.onChanged,
+    required this.currentFilter,
+  });
 
   @override
   State<CategoryByWeekMonthYear> createState() =>
@@ -11,9 +18,27 @@ class CategoryByWeekMonthYear extends StatefulWidget {
 
 class _CategoryByWeekMonthYearState
     extends State<CategoryByWeekMonthYear> {
-  int selectedIndex = 0;
+  late int selectedIndex;
 
   final List<String> items = ["Hafta", "Oy", "Yil"];
+  final List<String> filterTypes = ["week", "month", "year"];
+
+  @override
+  void initState() {
+    super.initState();
+    selectedIndex = filterTypes.indexOf(widget.currentFilter);
+    if (selectedIndex == -1) selectedIndex = 1; // Default to 'Oy'
+  }
+
+  @override
+  void didUpdateWidget(CategoryByWeekMonthYear oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.currentFilter != oldWidget.currentFilter) {
+      setState(() {
+        selectedIndex = filterTypes.indexOf(widget.currentFilter);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +58,7 @@ class _CategoryByWeekMonthYearState
         Container(
           height: 32.h,
           width: 175.w,
-          padding: EdgeInsets.all(3),
+          padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
             color: const Color(0xffE5E9EA),
             borderRadius: BorderRadius.circular(24),
@@ -45,17 +70,11 @@ class _CategoryByWeekMonthYearState
               return Expanded(
                 child: GestureDetector(
                   onTap: () {
-                    setState(() {
-                      selectedIndex = index;
-                    });
-
-                    // 🔥 BU YERDA DATA O'ZGARTIRASAN
-                    if (index == 0) {
-                      print("Haftalik data");
-                    } else if (index == 1) {
-                      print("Oylik data");
-                    } else {
-                      print("Yillik data");
+                    if (selectedIndex != index) {
+                      setState(() {
+                        selectedIndex = index;
+                      });
+                      widget.onChanged(filterTypes[index]);
                     }
                   },
                   child: AnimatedContainer(
@@ -73,8 +92,8 @@ class _CategoryByWeekMonthYearState
                         fontSize: 12,
                         fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
                         color: isActive
-                            ? Color(0xff006673)
-                            : Color(0xff3E494B),
+                            ? const Color(0xff006673)
+                            : const Color(0xff3E494B),
                       ),
                     ),
                   ),

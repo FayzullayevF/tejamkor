@@ -22,6 +22,16 @@ class CurrencyModel {
       rate: json['rate']?.toString() ?? '',
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'code': code,
+      'name': name,
+      'symbol': symbol,
+      'rate': rate,
+    };
+  }
 }
 
 class UserCurrencyResponse {

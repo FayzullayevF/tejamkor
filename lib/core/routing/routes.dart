@@ -19,7 +19,7 @@ import 'package:tejamkor/transaction_history/pages/transaction_history_view.dart
 import 'package:tejamkor/add_transactions/pages/transaction_categories_view.dart';
 
 final router = GoRouter(
-  initialLocation: Routers.signUp,
+  initialLocation: Routers.login,
   routes: [
     GoRoute(path: Routers.onboarding, builder: (_, _) => OnboardingView()),
     GoRoute(path: Routers.login, builder: (_, _) => LoginView()),
