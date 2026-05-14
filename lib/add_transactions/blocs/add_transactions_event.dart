@@ -14,24 +14,24 @@ class SubmitTransactionEvent extends TransactionEvent {
   final String type;
   final double amount;
   final String note;
-  final int currency;
   final int account;
   final int category;
   final DateTime dateTime;
+  final int? currencyId;
 
   const SubmitTransactionEvent({
     required this.type,
     required this.amount,
     required this.note,
-    required this.currency,
     required this.account,
     required this.category,
     required this.dateTime,
+    this.currencyId,
   });
 
   @override
   List<Object?> get props => [
-    type, amount, note, currency, account, category, dateTime
+    type, amount, note, account, category, dateTime, currencyId
   ];
 }
 

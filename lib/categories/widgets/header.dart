@@ -16,7 +16,7 @@ class Header extends StatelessWidget {
       "Daromadlar toifalarini tanlang!",
     ];
     final subtitle = [
-      "Ilovada xarajat va daromadlaringizni oson kuzatib borish uchun foydalanmoqchi bo'lgan pul birligingizni tanlang",
+      "Ilovada xarajat va daromadlaringizni oson kuzatib borish uchun foydalanmoqchi bo'lgan pul birligingizni tanlang!",
       "Odatda sarflaydigan xarajatlaringizni tanlang",
       "Odatda oladigan daromadlar toifasini tanlang",
     ];

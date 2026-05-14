@@ -29,10 +29,10 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         type: event.type,
         amount: event.amount,
         note: event.note,
-        currency: event.currency,
         account: event.account,
         category: event.category,
         dateTime: event.dateTime,
+        currencyId: event.currencyId,
       );
 
       emit(TransactionSubmitSuccess(transaction));
@@ -49,8 +49,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     emit(TransactionsLoading());
 
     try {
-      final transactions = await _repository.getAllTransactions();
-      emit(TransactionsLoadSuccess(transactions));
+      final response = await _repository.getAllTransactions();
+      emit(TransactionsLoadSuccess(response));
     } catch (e) {
       emit(TransactionError(e.toString()));
     }

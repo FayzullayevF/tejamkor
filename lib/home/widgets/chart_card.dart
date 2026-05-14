@@ -2,16 +2,22 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tejamkor/home/bloc/dashboard_bloc.dart';
 
-class ChartCard extends StatefulWidget {
-  const ChartCard({super.key});
+class ChartCard extends StatelessWidget {
+  final Map<String, dynamic> monthlyCategories;
+  final String currency;
+  final bool isExpense;
+  final Function(bool) onToggle;
 
-  @override
-  State<ChartCard> createState() => _ChartCardState();
-}
-
-class _ChartCardState extends State<ChartCard> {
-  bool isExpenseSelected = true;
+  const ChartCard({
+    super.key,
+    required this.monthlyCategories,
+    required this.currency,
+    required this.isExpense,
+    required this.onToggle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -33,15 +39,20 @@ class _ChartCardState extends State<ChartCard> {
               children: [
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => setState(() => isExpenseSelected = true),
+                    onTap: () {
+                      if (!isExpense) {
+                        onToggle(true);
+                        context.read<DashboardBloc>().add(LoadDashboardEvent(transactionType: 'expense'));
+                      }
+                    },
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: isExpenseSelected
+                        color: isExpense
                             ? Colors.white
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(30.r),
-                        boxShadow: isExpenseSelected
+                        boxShadow: isExpense
                             ? [BoxShadow(color: Colors.black12, blurRadius: 4)]
                             : null,
                       ),
@@ -50,10 +61,10 @@ class _ChartCardState extends State<ChartCard> {
                           "Xarajat",
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: isExpenseSelected
+                            fontWeight: isExpense
                                 ? FontWeight.bold
                                 : FontWeight.w500,
-                            color: isExpenseSelected
+                            color: isExpense
                                 ? Colors.black
                                 : Colors.grey,
                           ),
@@ -64,15 +75,20 @@ class _ChartCardState extends State<ChartCard> {
                 ),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () => setState(() => isExpenseSelected = false),
+                    onTap: () {
+                      if (isExpense) {
+                        onToggle(false);
+                        context.read<DashboardBloc>().add(LoadDashboardEvent(transactionType: 'income'));
+                      }
+                    },
                     child: Container(
                       padding: EdgeInsets.symmetric(vertical: 8.h),
                       decoration: BoxDecoration(
-                        color: !isExpenseSelected
+                        color: !isExpense
                             ? Colors.white
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(30.r),
-                        boxShadow: !isExpenseSelected
+                        boxShadow: !isExpense
                             ? [BoxShadow(color: Colors.black12, blurRadius: 4)]
                             : null,
                       ),
@@ -81,10 +97,10 @@ class _ChartCardState extends State<ChartCard> {
                           "Daromad",
                           style: TextStyle(
                             fontSize: 18,
-                            fontWeight: !isExpenseSelected
+                            fontWeight: !isExpense
                                 ? FontWeight.bold
                                 : FontWeight.w500,
-                            color: !isExpenseSelected
+                            color: !isExpense
                                 ? Colors.black
                                 : Colors.grey,
                           ),
@@ -116,7 +132,7 @@ class _ChartCardState extends State<ChartCard> {
                     ),
                     SizedBox(height: 4.h),
                     Text(
-                      "5 000 000\nUZS",
+                      monthlyCategories['total']?.toString() ?? "0\n$currency",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.black,
@@ -127,35 +143,53 @@ class _ChartCardState extends State<ChartCard> {
                   ],
                 ),
                 Positioned.fill(
-                  child: CustomPaint(painter: DonutChartPainter()),
+                  child: CustomPaint(
+                    painter: DonutChartPainter(
+                      categories: monthlyCategories['categories'] ?? [],
+                      isExpense: isExpense,
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
           SizedBox(height: 47.h),
-          _buildChartListItem(
-            iconSrc: "assets/icons/car.svg",
-            bgColor: const Color(0xff0ED2C9),
-            title: "Taksi",
-            subtext: "35%",
-            amount: "1 200 000 UZS",
-          ),
-          SizedBox(height: 12.h),
-          _buildChartListItem(
-            iconSrc: "assets/icons/heart.svg",
-            bgColor: const Color(0xffFFA000),
-            title: "Salomatlik",
-            subtext: "55%",
-            amount: "2 200 000 UZS",
-          ),
-          SizedBox(height: 12.h),
-          _buildChartListItem(
-            iconSrc: "assets/icons/home.svg",
-            bgColor: const Color(0xffAB47BC),
-            title: "Ijara",
-            subtext: "25%",
-            amount: "800 000 UZS",
-          ),
+          if (monthlyCategories['categories'] != null)
+            ...(monthlyCategories['categories'] as List).take(3).toList().asMap().entries.map((entry) {
+              final int index = entry.key;
+              final category = entry.value;
+              
+              final List<Color> expenseColors = [
+                const Color(0xffFF6B6B),
+                const Color(0xffFFD93D),
+                const Color(0xffFF9248),
+                const Color(0xff6BCB77),
+                const Color(0xff4D96FF),
+              ];
+
+              final List<Color> incomeColors = [
+                const Color(0xff4CAF50),
+                const Color(0xff8BC34A),
+                const Color(0xffCDDC39),
+                const Color(0xff00BCD4),
+                const Color(0xff009688),
+              ];
+
+              final colors = isExpense ? expenseColors : incomeColors;
+
+              return Padding(
+                padding: EdgeInsets.only(bottom: 12.h),
+                child: _buildChartListItem(
+                  iconSrc: "assets/icons/car.svg", // Ideally this should come from category data
+                  bgColor: colors[index % colors.length],
+                  title: category['name'] ?? "Kategoriya",
+                  subtext: "${category['percentage'] ?? 0}%",
+                  amount: "${category['amount'] ?? 0} $currency",
+                ),
+              );
+            })
+          else
+            const Text("Ma'lumot yo'q"),
         ],
       ),
     );
@@ -180,7 +214,7 @@ class _ChartCardState extends State<ChartCard> {
           Container(
             width: 50.w,
             height: 49.w,
-            padding: EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
             decoration: BoxDecoration(color: bgColor, shape: BoxShape.circle),
             alignment: Alignment.center,
             child: SvgPicture.asset(iconSrc, color: Colors.white),
@@ -191,11 +225,11 @@ class _ChartCardState extends State<ChartCard> {
             children: [
               Text(
                 title,
-                style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
+                style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
               ),
               Text(
                 subtext,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.grey,
                   fontSize: 12,
                   fontWeight: FontWeight.w400,
@@ -206,7 +240,7 @@ class _ChartCardState extends State<ChartCard> {
           const Spacer(),
           Text(
             amount,
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 20),
           ),
         ],
       ),
@@ -215,6 +249,11 @@ class _ChartCardState extends State<ChartCard> {
 }
 
 class DonutChartPainter extends CustomPainter {
+  final List<dynamic> categories;
+  final bool isExpense;
+
+  DonutChartPainter({required this.categories, required this.isExpense});
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
@@ -222,17 +261,49 @@ class DonutChartPainter extends CustomPainter {
 
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 24.w
+      ..strokeCap = StrokeCap.butt;
     final rect = Rect.fromCircle(center: center, radius: radius);
-    paint.color = const Color(0xff0DB7D1);
-    canvas.drawArc(rect, -pi / 2, pi, false, paint);
-    paint.color = const Color(0xffFFA000);
-    canvas.drawArc(rect, pi / 2 + 0.2, pi * 0.7, false, paint);
-    paint.color = const Color(0xffAB47BC);
-    canvas.drawArc(rect, pi * 1.3, pi * 0.4, false, paint);
+
+    if (categories.isEmpty) {
+      paint.color = isExpense ? const Color(0xffFF6B6B).withOpacity(0.2) : const Color(0xff4CAF50).withOpacity(0.2);
+      canvas.drawCircle(center, radius, paint);
+      return;
+    }
+
+    double startAngle = -pi / 2;
+
+    final List<Color> expenseColors = [
+      const Color(0xffFF6B6B),
+      const Color(0xffFFD93D),
+      const Color(0xffFF9248),
+      const Color(0xff6BCB77),
+      const Color(0xff4D96FF),
+    ];
+
+    final List<Color> incomeColors = [
+      const Color(0xff4CAF50),
+      const Color(0xff8BC34A),
+      const Color(0xffCDDC39),
+      const Color(0xff00BCD4),
+      const Color(0xff009688),
+    ];
+
+    final colors = isExpense ? expenseColors : incomeColors;
+
+    for (int i = 0; i < categories.length; i++) {
+      final category = categories[i];
+      final double percentage = (category['percentage'] as num?)?.toDouble() ?? 0.0;
+      if (percentage <= 0) continue;
+      final sweepAngle = (percentage / 100) * 2 * pi;
+
+      paint.color = colors[i % colors.length];
+      canvas.drawArc(rect, startAngle, sweepAngle, false, paint);
+      startAngle += sweepAngle;
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant DonutChartPainter oldDelegate) =>
+      oldDelegate.categories != categories || oldDelegate.isExpense != isExpense;
 }

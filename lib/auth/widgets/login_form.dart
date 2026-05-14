@@ -159,7 +159,7 @@ class _LoginFormBodyState extends State<_LoginFormBody> {
                           ..shader = LinearGradient(
                             colors: [
                               AppColors.cyanAccent,
-                              AppColors.darkNavy.withValues(alpha: 0.5),
+                              AppColors.darkNavy.withOpacity( 0.5),
                             ],
                           ).createShader(const Rect.fromLTWH(0, 0, 200, 70)),
                       ),

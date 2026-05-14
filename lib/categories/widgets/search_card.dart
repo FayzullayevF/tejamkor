@@ -39,7 +39,7 @@ class _SearchCardState extends State<SearchCard> {
               color: Color(0xff7C7777),
             ),
 
-            prefixIcon: Container(
+            prefixIcon: Padding(
               padding: EdgeInsets.only(left: 24.w, right: 14.w),
               child: SvgPicture.asset(
                 'assets/icons/search.svg',

@@ -20,9 +20,7 @@ class DailyAverage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(
-          0xffF0F4F5,
-        ).withValues(alpha: 0.9), // light grey background
+        color: const Color(0xffF0F4F5),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

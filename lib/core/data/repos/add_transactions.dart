@@ -12,38 +12,37 @@ class TransactionRepository {
     required String type,
     required double amount,
     required String note,
-    required int currency,
     required int account,
     required int category,
     required DateTime dateTime,
+    int? currencyId,
   }) async {
     final transaction = TransactionModel(
       type: type,
       amount: amount.toStringAsFixed(0),
       note: note == "Add note" ? "" : note,
-      currency: currency,
-      account: account,
-      category: category,
+      accountId: account,
+      categoryId: category,
       dateTime: dateTime,
+      currencyId: currencyId,
     );
 
     return await _apiClient.createTransaction(transaction);
   }
 
-  // Get all transactions (agar kerak bo'lsa)
-  Future<List<TransactionModel>> getAllTransactions() async {
+  // Get all transactions
+  Future<TransactionHistoryResponse> getAllTransactions() async {
     try {
       final response = await _apiClient.dio.get('/api/transactions/transactions/');
 
-      if (response.statusCode == 200 && response.data is List) {
-        return (response.data as List)
-            .map((json) => TransactionModel.fromJson(json as Map<String, dynamic>))
-            .toList();
+      if (response.statusCode == 200) {
+        return TransactionHistoryResponse.fromJson(response.data as Map<String, dynamic>);
       } else {
-        throw Exception('Failed to load transactions');
+        throw Exception('Server error: ${response.statusCode}');
       }
     } catch (e) {
-      throw Exception('Error loading transactions: $e');
+      print('Error loading transactions: $e');
+      throw Exception('Tranzaksiyalarni yuklashda xatolik: $e');
     }
   }
 

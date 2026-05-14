@@ -1,23 +1,37 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+// lib/categories/blocs/currency/currency_state.dart
+
 import 'package:tejamkor/categories/data/models/currency_model.dart';
 
-part 'currency_state.freezed.dart';
+enum CurrencyStatus { idle, loading, success, error }
 
-enum CurrencyStatus { idle, loading, success, error, updating, updated }
+class CurrencyState {
+  final CurrencyStatus status;
+  final UserCurrencyResponse? response;
+  final String? errorMessage;
+  final int? selectedCurrencyId;
 
-@freezed
-abstract class CurrencyState with _$CurrencyState {
-  const factory CurrencyState({
-    required CurrencyStatus status,
-    UserCurrencyResponse? response,
-    String? errorMessage,
-  }) = _CurrencyState;
+  CurrencyState({
+    required this.status,
+    this.response,
+    this.errorMessage,
+    this.selectedCurrencyId,
+  });
 
   factory CurrencyState.initial() {
-    return const CurrencyState(
-      status: CurrencyStatus.idle,
-      response: null,
-      errorMessage: null,
+    return CurrencyState(status: CurrencyStatus.idle);
+  }
+
+  CurrencyState copyWith({
+    CurrencyStatus? status,
+    UserCurrencyResponse? response,
+    String? errorMessage,
+    int? selectedCurrencyId,
+  }) {
+    return CurrencyState(
+      status: status ?? this.status,
+      response: response ?? this.response,
+      errorMessage: errorMessage ?? this.errorMessage,
+      selectedCurrencyId: selectedCurrencyId ?? this.selectedCurrencyId,
     );
   }
 }

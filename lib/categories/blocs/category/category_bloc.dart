@@ -16,22 +16,18 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     CategoriesFetched event,
     Emitter<CategoryState> emit,
   ) async {
-    print("Categories fetch event keldi");
-    emit(state.copyWith(status: CategoryStatus.loading));
+    emit(state.copyWith(status: CategoryStatus.loading, errorMessage: null));
     try {
       final categories = await _repo.getCategories();
-      print("Categories fetch success: ${categories.length} ta kategoriya keldi");
       emit(state.copyWith(
         status: CategoryStatus.success,
         categories: categories,
       ));
-    } catch (e, s) {
-      print("Categories fetch error: $e");
-      print("STACKTRACE: $s");
+    } catch (e) {
       emit(
         state.copyWith(
           status: CategoryStatus.error,
-          errorMessage: e.toString(),
+          errorMessage: e.toString().replaceAll("Exception: ", ""),
         ),
       );
     }

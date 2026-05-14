@@ -35,6 +35,13 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/icons/pictures/tejamkor-logo.jpg"
+  min_sdk_android: 21 # flutter_launcher_icons requires this to be specified if not using default
 
 flutter:
   assets:

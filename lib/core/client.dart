@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:tejamkor/categories/data/models/category_model.dart';
-import 'package:tejamkor/categories/data/models/currency_model.dart';
 import 'package:tejamkor/core/data/models/auth/auth_model.dart';
 import 'package:tejamkor/core/data/models/auth/change_password.dart';
 import 'package:tejamkor/core/data/models/auth/forgot_password_request.dart';
@@ -12,6 +11,8 @@ import 'package:tejamkor/core/interceptor.dart';
 import 'api_constans.dart';
 import 'data/models/transactions/post_transactions.dart';
 import 'data/models/accounts/account_model.dart';
+import 'package:tejamkor/home/data/models/dashboard_model.dart';
+import 'package:tejamkor/categories/data/models/currency_model.dart';
 
 class ApiClient {
   final Dio dio = Dio(BaseOptions(baseUrl: "https://www.tejamkor-ai.uz"))
@@ -142,74 +143,57 @@ class ApiClient {
   }
 
   Future<List<CategoryModel>> getCategories() async {
-    final response = await dio.get('/api/categories/defaults/');
-
-    if (response.data is List) {
-      final list = (response.data as List)
-          .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-      return list; // Return all to let view filter them
-    } else {
-      throw Exception('Kategoriyalarni yuklashda xatolik yuz berdi');
+    try {
+      final response = await dio.get('/api/categories/defaults/');
+      
+      dynamic data = response.data;
+      if (data is Map && data.containsKey('results')) {
+        data = data['results'];
+      }
+      
+      if (data is List) {
+        return data.map((e) => CategoryModel.fromJson(e as Map<String, dynamic>)).toList();
+      } else {
+        throw Exception("Noto'g'ri ma'lumot formati: $data");
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 
   Future<List<CategoryModel>> getUserCategories() async {
-    final response = await dio.get('/api/categories/');
-
-    if (response.data is List) {
-      return (response.data as List)
-          .map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } else {
-      throw Exception('O\'z kategoriyalaringizni yuklashda xatolik');
+    try {
+      final response = await dio.get('/api/categories/');
+      
+      dynamic data = response.data;
+      if (data is Map && data.containsKey('results')) {
+        data = data['results'];
+      }
+      
+      if (data is List) {
+        return data.map((e) => CategoryModel.fromJson(e as Map<String, dynamic>)).toList();
+      } else {
+        throw Exception("Noto'g'ri ma'lumot formati: $data");
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 
   Future<void> selectDefaultCategories(List<int> categoryIds) async {
-    final response = await dio.post(
-      '/api/categories/select-defaults/',
-      data: {'category_ids': categoryIds},
-    );
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Kategoriyalarni saqlashda xatolik yuz berdi');
+    try {
+      final response = await dio.post(
+        '/api/categories/select-defaults/',
+        data: {'category_ids': categoryIds},
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception("Saqlashda xatolik yuz berdi");
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
     }
   }
 
-  Future<List<CurrencyModel>> getCurrencies() async {
-    final response = await dio.get('/api/transactions/currencies/');
-
-    if (response.statusCode == 200 && response.data is List) {
-      return (response.data as List)
-          .map((e) => CurrencyModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-    } else {
-      throw Exception('Valyutalarni yuklashda xatolik yuz berdi');
-    }
-  }
-
-  Future<UserCurrencyResponse> getUserCurrency() async {
-    final response = await dio.get('/api/transactions/user-currency/');
-
-    if (response.statusCode == 200 && response.data != null) {
-      return UserCurrencyResponse.fromJson(response.data as Map<String, dynamic>);
-    } else {
-      throw Exception('Valyutani yuklashda xatolik yuz berdi');
-    }
-  }
-
-  Future<void> updateUserCurrency(CurrencyModel currency) async {
-    final response = await dio.patch(
-      '/api/transactions/user-currency/',
-      data: {
-        'currency': currency.id,
-        'currency_detail': currency.toJson(),
-      },
-    );
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception('Valyutani o\'zgartirishda xatolik yuz berdi');
-    }
-  }
   Future<TransactionModel> createTransaction(TransactionModel transaction) async {
     try {
       final response = await dio.post(
@@ -261,6 +245,99 @@ class ApiClient {
       } else {
         throw Exception('Failed to load accounts: ${response.statusCode}');
       }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<DashboardModel> getDashboard({
+    int? month,
+    int? year,
+    String? transactionType,
+    String? currency,
+  }) async {
+    try {
+      final Map<String, dynamic> queryParameters = {};
+      if (month != null) queryParameters['month'] = month;
+      if (year != null) queryParameters['year'] = year;
+      if (transactionType != null) queryParameters['transaction_type'] = transactionType;
+      if (currency != null) queryParameters['currency'] = currency;
+
+      final response = await dio.get(
+        '/api/dashboard/',
+        queryParameters: queryParameters,
+      );
+
+      if (response.statusCode == 200) {
+        return DashboardModel.fromJson(response.data as Map<String, dynamic>);
+      } else {
+        throw Exception('Failed to load dashboard data: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<List<CurrencyModel>> getOtherCurrencies() async {
+    try {
+      final response = await dio.get('/api/dashboard/currency/other/');
+      if (response.statusCode == 200) {
+        if (response.data is List) {
+          return (response.data as List)
+              .map((e) => CurrencyModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+        } else if (response.data is Map && response.data.containsKey('results')) {
+          return (response.data['results'] as List)
+              .map((e) => CurrencyModel.fromJson(e as Map<String, dynamic>))
+              .toList();
+        }
+        return [];
+      } else {
+        throw Exception('Failed to load other currencies: ${response.statusCode}');
+      }
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<void> addCurrencyToDashboard(int currencyId) async {
+    try {
+      await dio.post(
+        '/api/dashboard/currency/add/',
+        data: {'currency_id': currencyId},
+      );
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<void> removeCurrencyFromDashboard(int currencyId) async {
+    try {
+      await dio.post(
+        '/api/dashboard/currency/remove/',
+        data: {'currency_id': currencyId},
+      );
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<UserCurrencyResponse> getUserCurrency() async {
+    try {
+      final response = await dio.get('/api/transactions/user-currency/');
+      return UserCurrencyResponse.fromJson(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    }
+  }
+
+  Future<UserCurrencyResponse> updateUserCurrency(int currencyId) async {
+    try {
+      final response = await dio.patch(
+        '/api/transactions/user-currency/',
+        data: {'currency': currencyId},
+      );
+      return UserCurrencyResponse.fromJson(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       throw _handleDioError(e);
     }

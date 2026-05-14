@@ -4,7 +4,16 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tejamkor/core/utils/icon_mapper.dart';
 
 class IncomeExpenseRow extends StatelessWidget {
-  const IncomeExpenseRow({super.key});
+  final double totalIncome;
+  final double totalExpense;
+  final String currency;
+
+  const IncomeExpenseRow({
+    super.key,
+    required this.totalIncome,
+    required this.totalExpense,
+    required this.currency,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +22,7 @@ class IncomeExpenseRow extends StatelessWidget {
         Expanded(
           child: _buildMiniCard(
             title: "Xarajatlar",
-            amount: "5 000 000 uzs",
+            amount: "${totalExpense.toStringAsFixed(0)} $currency",
             isExpense: true,
           ),
         ),
@@ -21,7 +30,7 @@ class IncomeExpenseRow extends StatelessWidget {
         Expanded(
           child: _buildMiniCard(
             title: "Daromad",
-            amount: "25 000 000 uzs",
+            amount: "${totalIncome.toStringAsFixed(0)} $currency",
             isExpense: false,
           ),
         ),
@@ -41,7 +50,7 @@ class IncomeExpenseRow extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity( 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -53,7 +62,7 @@ class IncomeExpenseRow extends StatelessWidget {
           Row(
             children: [
               SvgPicture.asset(
-                isExpense ? IconMapper.getTejamkorIcon("Xarajatlar") : IconMapper.getTejamkorIcon("Ish-haqi"),
+                isExpense ? 'assets/icons/xarajat_icon.svg' : 'assets/icons/daromad_icon.svg',
                 colorFilter: ColorFilter.mode(isExpense ? Colors.red : Colors.green, BlendMode.srcIn),
                 width: 14.w,
                 height: 14.w,

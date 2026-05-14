@@ -11,30 +11,29 @@ import 'package:tejamkor/core/data/repos/add_transactions.dart';
 import 'package:tejamkor/core/data/repos/auth_repository.dart';
 import 'package:tejamkor/categories/data/repositories/category_repository.dart';
 import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
-import 'package:tejamkor/categories/data/repositories/currency_repository.dart';
-import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
 import 'package:tejamkor/core/theme_notifier.dart';
 import 'package:tejamkor/core/data/repos/account_repository.dart';
 import 'package:tejamkor/add_transactions/blocs/accounts/accounts_bloc.dart';
 import 'package:tejamkor/statistics/data/sources/statistics_api_source.dart';
 import 'package:tejamkor/statistics/data/repositories/statistics_repository.dart';
 import 'package:tejamkor/statistics/bloc/statistics_bloc.dart';
+import 'package:tejamkor/home/data/repos/dashboard_repository.dart';
+import 'package:tejamkor/home/bloc/dashboard_bloc.dart';
+import 'package:tejamkor/categories/data/repositories/currency_repository.dart';
+import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
 
 List<SingleChildWidget> providers = [
   ChangeNotifierProvider(create: (_) => ThemeNotifier()),
   Provider(create: (context) => ApiClient()),
   Provider(create: (context) => AuthRepository(client: context.read())),
   Provider(create: (context) => CategoryRepository(apiClient: context.read())),
-  Provider(create: (context) => CurrencyRepository(context.read<ApiClient>())),
   Provider(create: (context) => TransactionRepository(context.read<ApiClient>())),
   Provider(create: (context) => AccountRepository(apiClient: context.read<ApiClient>())),
   Provider(create: (context) => StatisticsApiSource(context.read<ApiClient>().dio)),
   Provider(create: (context) => StatisticsRepository(context.read<StatisticsApiSource>())),
+  Provider(create: (context) => CurrencyRepository(apiClient: context.read<ApiClient>())),
   BlocProvider(
     create: (context) => CategoryBloc(repo: context.read<CategoryRepository>()),
-  ),
-  BlocProvider(
-    create: (context) => CurrencyBloc(context.read<CurrencyRepository>()),
   ),
   BlocProvider(
     create: (context) => SignUpBloc(repo: context.read<AuthRepository>()),
@@ -56,5 +55,12 @@ List<SingleChildWidget> providers = [
   ),
   BlocProvider(
     create: (context) => StatisticsBloc(context.read<StatisticsRepository>()),
+  ),
+  BlocProvider(
+    create: (context) => CurrencyBloc(repo: context.read<CurrencyRepository>()),
+  ),
+  Provider(create: (context) => DashboardRepository(context.read<ApiClient>())),
+  BlocProvider(
+    create: (context) => DashboardBloc(context.read<DashboardRepository>()),
   ),
 ];

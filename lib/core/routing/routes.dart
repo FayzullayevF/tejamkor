@@ -9,7 +9,7 @@ import 'package:tejamkor/auth/pages/onboarding_view.dart';
 import 'package:tejamkor/auth/pages/sign_up_view.dart';
 import 'package:tejamkor/core/data/repos/add_transactions.dart';
 import 'package:tejamkor/core/routing/router.dart';
-import 'package:tejamkor/home/home_view.dart';
+import 'package:tejamkor/home/pages/home_view.dart';
 import 'package:tejamkor/categories/pages/all_categories_view.dart';
 import 'package:tejamkor/home/pages/settings_view.dart';
 import 'package:tejamkor/add_transactions/pages/add_transaction_view.dart';
@@ -17,6 +17,10 @@ import 'package:tejamkor/monthly_limit/pages/monthly_limit_view.dart';
 import 'package:tejamkor/statistics/pages/statistics_view.dart';
 import 'package:tejamkor/transaction_history/pages/transaction_history_view.dart';
 import 'package:tejamkor/add_transactions/pages/transaction_categories_view.dart';
+import 'package:tejamkor/home/pages/settings/account_security_view.dart';
+import 'package:tejamkor/home/pages/settings/linked_accounts_view.dart';
+import 'package:tejamkor/home/pages/settings/notification_settings_view.dart';
+import 'package:tejamkor/home/pages/settings/privacy_policy_view.dart';
 
 final router = GoRouter(
   initialLocation: Routers.login,
@@ -59,7 +63,35 @@ final router = GoRouter(
     ),
     GoRoute(
       path: Routers.transactionCategories,
-      builder: (_, _) => TransactionCategoriesView(),
+      builder: (context, state) {
+        final extra = state.extra;
+        if (extra is Map) {
+          final hiddenIds =
+              (extra['hiddenIds'] as List<dynamic>?)?.cast<int>() ?? [];
+          final multiSelect = (extra['multiSelect'] as bool?) ?? false;
+          return TransactionCategoriesView(
+            hiddenCategoryIds: hiddenIds,
+            multiSelect: multiSelect,
+          );
+        }
+        return const TransactionCategoriesView();
+      },
+    ),
+    GoRoute(
+      path: Routers.accountSecurity,
+      builder: (_, _) => const AccountSecurityView(),
+    ),
+    GoRoute(
+      path: Routers.linkedAccounts,
+      builder: (_, _) => const LinkedAccountsView(),
+    ),
+    GoRoute(
+      path: Routers.notificationSettings,
+      builder: (_, _) => const NotificationSettingsView(),
+    ),
+    GoRoute(
+      path: Routers.privacyPolicy,
+      builder: (_, _) => const PrivacyPolicyView(),
     ),
   ],
 );

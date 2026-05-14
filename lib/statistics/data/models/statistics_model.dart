@@ -6,6 +6,7 @@ class StatisticsModel {
   final List<CategoryStatistic> categories;
   final DailyAverageData dailyAverage;
   final List<Last7Days> last7Days;
+  final String currencySymbol;
 
   StatisticsModel({
     required this.filterType,
@@ -13,6 +14,7 @@ class StatisticsModel {
     required this.categories,
     required this.dailyAverage,
     required this.last7Days,
+    required this.currencySymbol,
   });
 
   factory StatisticsModel.fromJson(Map<String, dynamic> json) {
@@ -26,25 +28,23 @@ class StatisticsModel {
       last7Days: (json['last_7_days'] as List? ?? [])
           .map((i) => Last7Days.fromJson(i))
           .toList(),
+      currencySymbol: json['currency_symbol'] as String? ?? "so'm",
     );
   }
 }
 
 class Overall {
   final double totalAmount;
-  final String currency;
   final String percentageChange;
 
   Overall({
     required this.totalAmount,
-    required this.currency,
     required this.percentageChange,
   });
 
   factory Overall.fromJson(Map<String, dynamic> json) {
     return Overall(
       totalAmount: (json['total_amount'] ?? 0).toDouble(),
-      currency: json['currency'] ?? '',
       percentageChange: json['percentage_change'] ?? '',
     );
   }
@@ -88,19 +88,16 @@ class CategoryStatistic {
 class DailyAverageData {
   final double averageAmount;
   final double dailyLimit;
-  final String currency;
 
   DailyAverageData({
     required this.averageAmount,
     required this.dailyLimit,
-    required this.currency,
   });
 
   factory DailyAverageData.fromJson(Map<String, dynamic> json) {
     return DailyAverageData(
       averageAmount: (json['average_amount'] ?? 0).toDouble(),
       dailyLimit: (json['daily_limit'] ?? 0).toDouble(),
-      currency: json['currency'] ?? '',
     );
   }
 }
@@ -109,13 +106,11 @@ class Last7Days {
   final String dayName;
   final String date;
   final double amount;
-  final String currency;
 
   Last7Days({
     required this.dayName,
     required this.date,
     required this.amount,
-    required this.currency,
   });
 
   factory Last7Days.fromJson(Map<String, dynamic> json) {
@@ -123,7 +118,6 @@ class Last7Days {
       dayName: json['day_name'] ?? '',
       date: json['date'] ?? '',
       amount: (json['amount'] ?? 0).toDouble(),
-      currency: json['currency'] ?? '',
     );
   }
 }

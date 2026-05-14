@@ -9,6 +9,7 @@ import '../../widgets/app_button.dart';
 import '../widgets/auth_app_bar.dart';
 import '../widgets/auth_text_field.dart';
 import '../widgets/show_error_dialog.dart';
+import 'package:tejamkor/widgets/app_snackbar.dart';
 
 class EnterPasswordView extends StatelessWidget {
   EnterPasswordView({super.key});
@@ -21,9 +22,7 @@ class EnterPasswordView extends StatelessWidget {
     return BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
       listener: (context, state) {
         if (state.status == ForgotPasswordStatus.codeSent) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text("Password changed")));
+          AppSnackbar.showSuccess(context, "Parol muvaffaqiyatli o'zgartirildi");
         }
         if (state.status == ForgotPasswordStatus.error) {
           showErrorDialog(context, state.error ?? "Xatolik yuz berdi");

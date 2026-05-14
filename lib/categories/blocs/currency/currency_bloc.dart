@@ -4,23 +4,25 @@ import 'currency_event.dart';
 import 'currency_state.dart';
 
 class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
-  final CurrencyRepository _repository;
+  final CurrencyRepository _repo;
 
-  CurrencyBloc(this._repository) : super(CurrencyState.initial()) {
+  CurrencyBloc({required CurrencyRepository repo})
+      : _repo = repo,
+        super(CurrencyState.initial()) {
     on<CurrencyFetched>(_onFetched);
+    on<CurrencySelected>(_onSelected);
     on<CurrencyUpdated>(_onUpdated);
   }
 
   Future<void> _onFetched(
-    CurrencyFetched event,
-    Emitter<CurrencyState> emit,
-  ) async {
-    emit(state.copyWith(status: CurrencyStatus.loading));
+      CurrencyFetched event, Emitter<CurrencyState> emit) async {
+    emit(state.copyWith(status: CurrencyStatus.loading, errorMessage: null));
     try {
-      final response = await _repository.getUserCurrency();
+      final response = await _repo.getUserCurrency();
       emit(state.copyWith(
         status: CurrencyStatus.success,
         response: response,
+        selectedCurrencyId: response.currency,
       ));
     } catch (e) {
       emit(state.copyWith(
@@ -30,24 +32,25 @@ class CurrencyBloc extends Bloc<CurrencyEvent, CurrencyState> {
     }
   }
 
+  void _onSelected(CurrencySelected event, Emitter<CurrencyState> emit) {
+    emit(state.copyWith(selectedCurrencyId: event.currencyId));
+  }
+
   Future<void> _onUpdated(
-    CurrencyUpdated event,
-    Emitter<CurrencyState> emit,
-  ) async {
-    final previousState = state;
-    emit(state.copyWith(status: CurrencyStatus.updating));
+      CurrencyUpdated event, Emitter<CurrencyState> emit) async {
+    emit(state.copyWith(status: CurrencyStatus.loading, errorMessage: null));
     try {
-      await _repository.updateUserCurrency(event.currency);
-      emit(state.copyWith(status: CurrencyStatus.updated));
-      // Option: refetch the currency logic
-      add(CurrencyFetched());
+      final response = await _repo.updateUserCurrency(event.currencyId);
+      emit(state.copyWith(
+        status: CurrencyStatus.success,
+        response: response,
+        selectedCurrencyId: response.currency,
+      ));
     } catch (e) {
       emit(state.copyWith(
         status: CurrencyStatus.error,
         errorMessage: e.toString(),
       ));
-      // After showing error, we can optionally revert to previous state
-      emit(previousState);
     }
   }
 }

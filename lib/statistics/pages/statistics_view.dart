@@ -63,23 +63,27 @@ class _StatisticsViewState extends State<StatisticsView> {
           } else if (state is StatisticsLoaded) {
             final stats = state.statistics;
 
-            // Ensure 7 days are always present for the chart
-            final weekDays = ["Du", "Se", "Chor", "Pay", "Ju", "Sha", "Yak"];
+            // Ensure exactly 7 days are shown, with today on the right
+            final List<String> uzDays = ["Du", "Se", "Chor", "Pay", "Ju", "Sha", "Yak"];
+            final now = DateTime.now();
             final List<WeeklyData> chartData = [];
 
-            for (var dayName in weekDays) {
-              final dayData = stats.last7Days.firstWhere(
-                (d) => d.dayName.toLowerCase().startsWith(
-                  dayName.toLowerCase().substring(0, 2),
-                ),
-                orElse: () => Last7Days(
-                  dayName: dayName,
-                  date: "",
-                  amount: 0,
-                  currency: "",
-                ),
-              );
-              chartData.add(WeeklyData(day: dayName, value: dayData.amount));
+            for (int i = 6; i >= 0; i--) {
+              final date = now.subtract(Duration(days: i));
+              final dayIndex = date.weekday - 1; // 0-indexed Monday
+              final dayName = uzDays[dayIndex];
+
+              // Try to find match in API data
+              final apiDay = stats.last7Days.where((d) {
+                final dName = d.dayName.toLowerCase();
+                return dName.startsWith(dayName.toLowerCase().substring(0, 2));
+              }).firstOrNull;
+
+              chartData.add(WeeklyData(
+                day: dayName,
+                value: apiDay?.amount ?? 0.0,
+                currency: stats.currencySymbol,
+              ));
             }
 
             final isNegative = stats.overall.percentageChange.startsWith('-');
@@ -102,7 +106,7 @@ class _StatisticsViewState extends State<StatisticsView> {
                         width: double.infinity,
                         text: "UMUMIY XARAJAT",
                         sum: stats.overall.totalAmount,
-                        currencySymbol: stats.overall.currency,
+                        currencySymbol: stats.currencySymbol,
                         color_one: const Color(0xff0B0D17),
                         color_two: const Color(0xff0FBC5F),
                         sizeBox1: 4.h,
@@ -123,7 +127,7 @@ class _StatisticsViewState extends State<StatisticsView> {
                       DailyAverage(
                         averageAmount: stats.dailyAverage.averageAmount,
                         dailyLimit: stats.dailyAverage.dailyLimit,
-                        currency: stats.dailyAverage.currency,
+                        currency: stats.currencySymbol,
                       ),
                       SizedBox(height: 32.h),
                       CategoryByWeekMonthYear(
@@ -139,27 +143,28 @@ class _StatisticsViewState extends State<StatisticsView> {
                         itemCount: stats.categories.length,
                         itemBuilder: (context, index) {
                           final cat = stats.categories[index];
-                          final iconPath = cat.categoryIcon.contains('/')
-                              ? cat.categoryIcon
+                          
+                          // Use icon from API if available, else map by name
+                          final iconPath = cat.categoryIcon.isNotEmpty 
+                              ? (cat.categoryIcon.contains('/') ? cat.categoryIcon : IconMapper.getTejamkorIcon(cat.categoryName))
                               : IconMapper.getTejamkorIcon(cat.categoryName);
+
+                          final catColor = _parseColor(cat.categoryColor);
 
                           return CategoryContainer(
                             title: cat.categoryName,
                             subtitle: "${cat.transactionCount} tranzaksiya",
                             icon: iconPath,
-                            percent:
-                                double.tryParse(
-                                  cat.percentageChange.replaceAll('%', ''),
-                                ) ??
-                                0.0,
+                            percent: double.tryParse(
+                                  cat.percentageChange.replaceAll('%', '').replaceAll('+', ''),
+                                ) ?? 0.0,
                             amount: cat.amount,
-                            // If backend returns 0-100, divide by 100. CategoryContainer expects 0-1.
                             progress: cat.progressPercent > 1
                                 ? cat.progressPercent / 100
                                 : cat.progressPercent,
-                            containerColor: _parseColor(cat.categoryColor),
-                            percentColor: const Color(0xffBA1A1A),
-                            sliderColor: _parseColor(cat.categoryColor),
+                            containerColor: catColor,
+                            sliderColor: catColor,
+                            percentColor: Colors.transparent, // Handled internally now
                           );
                         },
                       ),

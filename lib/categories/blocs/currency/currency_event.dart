@@ -1,11 +1,13 @@
-import 'package:tejamkor/categories/data/models/currency_model.dart';
-
 abstract class CurrencyEvent {}
 
 class CurrencyFetched extends CurrencyEvent {}
 
-class CurrencyUpdated extends CurrencyEvent {
-  final CurrencyModel currency;
+class CurrencySelected extends CurrencyEvent {
+  final int currencyId;
+  CurrencySelected(this.currencyId);
+}
 
-  CurrencyUpdated(this.currency);
+class CurrencyUpdated extends CurrencyEvent {
+  final int currencyId;
+  CurrencyUpdated(this.currencyId);
 }

@@ -7,26 +7,14 @@ class CategoryRepository {
   CategoryRepository({required this.apiClient});
 
   Future<List<CategoryModel>> getCategories() async {
-    try {
-      return await apiClient.getCategories();
-    } catch (e) {
-      throw Exception(e.toString());
-    }
+    return await apiClient.getCategories();
   }
 
   Future<List<CategoryModel>> getUserCategories() async {
-    try {
-      return await apiClient.getUserCategories();
-    } catch (e) {
-      throw Exception(e.toString());
-    }
+    return await apiClient.getUserCategories();
   }
 
   Future<void> selectDefaultCategories(List<int> categoryIds) async {
-    try {
-      await apiClient.selectDefaultCategories(categoryIds);
-    } catch (e) {
-      throw Exception(e.toString());
-    }
+    await apiClient.selectDefaultCategories(categoryIds);
   }
 }

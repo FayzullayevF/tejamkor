@@ -8,10 +8,15 @@ import 'package:tejamkor/categories/widgets/category_card.dart';
 import 'package:tejamkor/core/utils/icon_mapper.dart';
 
 class ExpenseView extends StatelessWidget {
-  const ExpenseView({super.key, required this.selectedIds, required this.onToggle});
-
   final Set<int> selectedIds;
   final Function(int) onToggle;
+
+  const ExpenseView({
+    super.key,
+    required this.selectedIds,
+    required this.onToggle,
+  });
+
   Widget _buildIcon(String categoryName) {
     return SvgPicture.asset(IconMapper.getTejamkorIcon(categoryName));
   }
@@ -20,18 +25,35 @@ class ExpenseView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, state) {
-        if (state.status == CategoryStatus.loading || state.status == CategoryStatus.idle) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF0ED2C9)));
+        if (state.status == CategoryStatus.loading ||
+            state.status == CategoryStatus.idle) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF0ED2C9)),
+          );
         }
 
         if (state.status == CategoryStatus.error) {
-          return Center(child: Text("Xatolik: ${state.errorMessage}"));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                state.errorMessage ??
+                    "Kategoriyalarni yuklashda xatolik yuz berdi",
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          );
         }
 
-        final expenses = state.categories.where((c) => c.type == 'expense').take(20).toList();
+        final expenses = state.categories
+            .where((c) => c.type == 'expense')
+            .toList();
 
         if (expenses.isEmpty) {
-          return const Center(child: Text("Hech qanday xarajat kategoriyasi yo'q"));
+          return const Center(
+            child: Text("Hech qanday xarajat kategoriyasi yo'q"),
+          );
         }
 
         return GridView.builder(
@@ -47,6 +69,7 @@ class ExpenseView extends StatelessWidget {
             final item = expenses[index];
             final title = item.name;
             return CategoryCard(
+              key: ValueKey(item.id),
               title: title,
               icon: _buildIcon(title),
               isSelected: selectedIds.contains(item.id),

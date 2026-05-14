@@ -120,7 +120,7 @@ class _CategoryCard extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFF006673).withValues(alpha: 0.3),
+                    color: const Color(0xFF006673).withOpacity( 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   )

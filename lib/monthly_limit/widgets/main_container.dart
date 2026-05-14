@@ -90,7 +90,7 @@ class MainContainer extends StatelessWidget {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
               decoration: BoxDecoration(
-                color: const Color(0xff06403D).withValues(alpha: 0.3),
+                color: Colors.white.withOpacity( 0.15),
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Row(

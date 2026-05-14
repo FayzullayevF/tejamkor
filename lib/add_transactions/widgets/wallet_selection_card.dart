@@ -179,15 +179,14 @@ class WalletSelectionCard extends StatelessWidget {
                                 border: Border.all(
                                   color: isSelected
                                       ? const Color(0xFFB7E4C7)
-                                      : Colors.grey.withValues(alpha: 0.1),
+                                      : Colors.grey.withOpacity( 0.1),
                                   width: isSelected ? 1.5 : 1,
                                 ),
                                 boxShadow: isSelected
                                     ? [
                                         BoxShadow(
-                                          color: Colors.green.withValues(
-                                            alpha: 0.15,
-                                          ),
+                                          color: Colors.green.withOpacity(0.15),
+
                                           blurRadius: 10,
                                           offset: const Offset(0, 4),
                                         ),

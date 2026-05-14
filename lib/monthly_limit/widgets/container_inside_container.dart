@@ -26,7 +26,7 @@ class ContainerInsideContainer extends StatelessWidget {
         width: width,
         padding: EdgeInsets.symmetric(vertical: 2.h, horizontal: 6.w),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.2),
+          color: Colors.white.withOpacity( 0.2),
           borderRadius: BorderRadius.circular(999),
         ),
         child: Row(

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class HomeBalance extends StatelessWidget {
-  const HomeBalance({super.key});
+  final double balance;
+  final String currency;
+  const HomeBalance({super.key, required this.balance, required this.currency});
 
   @override
   Widget build(BuildContext context) {
@@ -11,14 +13,14 @@ class HomeBalance extends StatelessWidget {
         Text(
           "Umumiy hisob",
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.8),
+            color: Colors.white.withOpacity( 0.8),
             fontSize: 13.sp,
             fontWeight: FontWeight.w400,
           ),
         ),
         SizedBox(height: 4.h),
         Text(
-          "23 000 000 UZS",
+          "${balance.toStringAsFixed(0)} $currency",
           style: TextStyle(
             color: Colors.white,
             fontSize: 32.sp,

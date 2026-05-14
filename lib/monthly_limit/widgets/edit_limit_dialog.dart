@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 import 'package:tejamkor/core/utils/app_colors.dart';
+import 'package:tejamkor/widgets/app_snackbar.dart';
 
 class EditLimitDialog extends StatefulWidget {
   final double currentLimit;
@@ -342,13 +343,7 @@ class _EditLimitDialogState extends State<EditLimitDialog> {
 
             // Final validation before saving
             if (val > widget.maxLimit) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Summa ${_formatNumber(widget.maxLimit)} so‘mdan oshmasligi kerak'),
-                  backgroundColor: Colors.red,
-                  duration: const Duration(seconds: 2),
-                ),
-              );
+              AppSnackbar.showError(context, 'Summa ${_formatNumber(widget.maxLimit)} so‘mdan oshmasligi kerak');
               return;
             }
 

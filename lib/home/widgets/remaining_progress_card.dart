@@ -3,28 +3,34 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tejamkor/core/utils/app_colors.dart';
 
+import 'package:tejamkor/home/data/models/dashboard_model.dart';
+
 class RemainingProgressCard extends StatelessWidget {
-  const RemainingProgressCard({super.key});
+  final TejamkorScore tejamkorScore;
+  final Map<String, dynamic> moneyRunway;
+
+  const RemainingProgressCard({
+    super.key,
+    required this.tejamkorScore,
+    required this.moneyRunway,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 300.h,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(24.r),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
         ],
       ),
-      // Qutidagi xatolikni oldini olish uchun (Spacer sababli pastki bo'shliq yetmay qolishi) ->
-      // Endi ichki elementlarni to'g'ridan-to'g'ri Stack orqali boshqaramiz
-      child: Stack(
-        clipBehavior: Clip.none,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // 1. Yuqori qismdagi ma'lumotlar
           Padding(
@@ -66,9 +72,9 @@ class RemainingProgressCard extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20.h),
-                const Text(
-                  "20 kunga yetadi",
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.w600),
+                Text(
+                  moneyRunway['message'] ?? "${moneyRunway['days'] ?? '0'} kunga yetadi",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600),
                 ),
                 SizedBox(height: 12.h),
                 Stack(
@@ -82,7 +88,7 @@ class RemainingProgressCard extends StatelessWidget {
                       ),
                     ),
                     FractionallySizedBox(
-                      widthFactor: 0.6,
+                      widthFactor: (moneyRunway['percentage'] as num?)?.toDouble() ?? 0.0,
                       child: Container(
                         height: 8.h,
                         decoration: BoxDecoration(
@@ -99,7 +105,7 @@ class RemainingProgressCard extends StatelessWidget {
                 ),
                 SizedBox(height: 8.h),
                 RichText(
-                  text: const TextSpan(
+                  text: TextSpan(
                     text: "Bugun yana ",
                     style: TextStyle(
                       color: Colors.black54,
@@ -108,7 +114,7 @@ class RemainingProgressCard extends StatelessWidget {
                     ),
                     children: [
                       TextSpan(
-                        text: "40 000 so'm",
+                        text: "${moneyRunway['daily_limit'] ?? '0'} so'm",
                         style: TextStyle(
                           color: Colors.black,
                           fontWeight: FontWeight.w400,
@@ -124,51 +130,50 @@ class RemainingProgressCard extends StatelessWidget {
             ),
           ),
 
-          // 2. Tejamkor Score va Dumaloq qismi aynan pastki qismda ushlab turiladi (bottom: 0)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
+          SizedBox(
+            height: 90.h, // Fixed height to avoid overflow issues
             child: Stack(
               clipBehavior: Clip.none,
               children: [
                 // Yashil chiziq
-                Container(
-                  width: double.infinity,
-                  height: 56.h,
-                  margin: EdgeInsets.only(right: 20.w),
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  alignment: Alignment.centerLeft,
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF0FBC5F), Color(0xFF0B0D17)],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      stops: [0.1, 1],
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    width: double.infinity,
+                    height: 56.h,
+                    margin: EdgeInsets.only(right: 30.w),
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    alignment: Alignment.centerLeft,
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [Color(0xFF0FBC5F), Color(0xFF0B0D17)],
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        stops: [0.1, 1],
+                      ),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(28),
+                        bottomLeft: Radius.circular(24),
+                      ),
                     ),
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(28),
-                      bottomLeft: Radius.circular(24),
-                    ),
-                  ),
-                  child: const Text(
-                    "Tejamkor Score",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.w400,
+                    child: const Text(
+                      "Tejamkor Score",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
                   ),
                 ),
-                // Dumaloq 75 soni
+                // Dumaloq score soni
                 Positioned(
-                  right: -10.w,
-                  top: -27.h,
+                  right: 0,
+                  bottom: -25.h,
                   child: Container(
                     width: 110.h,
                     height: 110.h,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [
@@ -179,26 +184,27 @@ class RemainingProgressCard extends StatelessWidget {
                         end: Alignment.bottomCenter,
                       ),
                     ),
-                    child: Container(
-                      width: 90.h,
-                      height: 90.h,
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF0FBC5F), Color(0xFF0B0D17)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.all(3.w), // 3px border effect
+                      child: Container(
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [Color(0xFF0FBC5F), Color(0xFF0B0D17)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
                         ),
-                      ),
-                      child: const Text(
-                        "75",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 42,
-                          fontWeight: FontWeight.w800,
-                          height: 1.0,
-                          letterSpacing: -1,
+                        child: Text(
+                          "${tejamkorScore.score}",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 42,
+                            fontWeight: FontWeight.w800,
+                            height: 1.0,
+                            letterSpacing: -1,
+                          ),
                         ),
                       ),
                     ),

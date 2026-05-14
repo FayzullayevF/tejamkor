@@ -11,14 +11,18 @@ class CategoryCard extends StatelessWidget {
   });
 
   final String title;
-  final dynamic icon;
+  final Widget icon;
   final bool isSelected;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final bgColor = isSelected ? const Color(0xffE2F9EB) : const Color(0xffF3F3F3);
-    final borderColor = isSelected ? const Color(0xff00413C) : Colors.transparent; 
+    final bgColor = isSelected
+        ? const Color(0xffE2F9EB)
+        : const Color(0xffF3F3F3);
+    final borderColor = isSelected
+        ? const Color(0xff00413C)
+        : Colors.transparent;
 
     return GestureDetector(
       onTap: onTap,
@@ -31,7 +35,7 @@ class CategoryCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            icon is IconData 
+            icon is IconData
                 ? Icon(icon as IconData, size: 36.w, color: Colors.black)
                 : icon as Widget,
             SizedBox(height: 8.h),

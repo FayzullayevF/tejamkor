@@ -6,9 +6,17 @@ import 'package:provider/provider.dart';
 import 'package:tejamkor/categories/data/models/category_model.dart';
 import 'package:tejamkor/core/utils/icon_mapper.dart';
 import 'package:tejamkor/categories/data/repositories/category_repository.dart';
+import 'package:tejamkor/widgets/app_snackbar.dart';
 
 class TransactionCategoriesView extends StatefulWidget {
-  const TransactionCategoriesView({super.key});
+  final List<int> hiddenCategoryIds;
+  final bool multiSelect;
+
+  const TransactionCategoriesView({
+    super.key,
+    this.hiddenCategoryIds = const [],
+    this.multiSelect = false,
+  });
 
   @override
   State<TransactionCategoriesView> createState() =>
@@ -17,6 +25,7 @@ class TransactionCategoriesView extends StatefulWidget {
 
 class _TransactionCategoriesViewState extends State<TransactionCategoriesView> {
   List<CategoryModel> _categories = [];
+  List<CategoryModel> _selectedCategories = [];
   bool _isLoading = true;
 
   @override
@@ -32,16 +41,14 @@ class _TransactionCategoriesViewState extends State<TransactionCategoriesView> {
           .getCategories(); // api/categories/default as requested
       if (mounted) {
         setState(() {
-          _categories = categories;
+          _categories = categories.where((cat) => !widget.hiddenCategoryIds.contains(cat.id)).toList();
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+        AppSnackbar.showError(context, e.toString());
       }
     }
   }
@@ -85,6 +92,22 @@ class _TransactionCategoriesViewState extends State<TransactionCategoriesView> {
         centerTitle: true,
         backgroundColor: const Color.fromARGB(0, 252, 252, 252),
         elevation: 0,
+        actions: [
+          if (widget.multiSelect)
+            TextButton(
+              onPressed: () {
+                context.pop(_selectedCategories);
+              },
+              child: Text(
+                "Saqlash",
+                style: TextStyle(
+                  color: const Color(0xFF007A8A),
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(
@@ -102,14 +125,26 @@ class _TransactionCategoriesViewState extends State<TransactionCategoriesView> {
               itemCount: _categories.length,
               itemBuilder: (context, index) {
                 final item = _categories[index];
+                final isSelected = _selectedCategories.any((c) => c.id == item.id);
                 return GestureDetector(
                   onTap: () {
-                    context.pop(item);
+                    if (widget.multiSelect) {
+                      setState(() {
+                        if (isSelected) {
+                          _selectedCategories.removeWhere((c) => c.id == item.id);
+                        } else {
+                          _selectedCategories.add(item);
+                        }
+                      });
+                    } else {
+                      context.pop(item);
+                    }
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                      color: cardColor,
+                      color: isSelected ? const Color(0xFF007A8A).withOpacity(0.1) : cardColor,
                       borderRadius: BorderRadius.circular(24.r),
+                      border: isSelected ? Border.all(color: const Color(0xFF007A8A), width: 2) : null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,

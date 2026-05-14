@@ -48,39 +48,44 @@ class SettingsProfileHeader extends StatelessWidget {
                 ),
               ),
               Positioned(
-                bottom: -10.h,
-                child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 10.w,
-                    vertical: 4.h,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF058F9D),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SvgPicture.asset(
-                        "assets/icons/tejamkor_plus.svg",
-                        width: 10.w,
-                        height: 10.w,
-                      ),
-                      SizedBox(width: 4.w),
-                      Text(
-                        "TEJAMKOR\nPLUS",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 8.sp,
-                          fontWeight: FontWeight.bold,
-                          height: 1.1,
+                bottom: 0,
+                child: ExcludeSemantics(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 4.h,
+                    ),
+                    margin: EdgeInsets.only(bottom: 10.h),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF058F9D),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(
+                          "assets/icons/tejamkor_plus.svg",
+                          width: 10.w,
+                          height: 10.w,
                         ),
-                      ),
-                    ],
+                        SizedBox(width: 4.w),
+                        Text(
+                          "TEJAMKOR\nPLUS",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 8.sp,
+                            fontWeight: FontWeight.bold,
+                            height: 1.1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
+
+
             ],
           ),
           SizedBox(height: 20.h),

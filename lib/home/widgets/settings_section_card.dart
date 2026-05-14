@@ -20,6 +20,7 @@ class SettingsSectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -43,8 +44,8 @@ class SettingsSectionCard extends StatelessWidget {
               final item = items[index];
               return Column(
                 children: [
-                  _buildSettingsItem(context, item),
-                  if (index < items.length - 1) _buildDivider(),
+                  _buildSettingsItem(context, item, isDark),
+                  if (index < items.length - 1) _buildDivider(isDark),
                 ],
               );
             }),
@@ -54,7 +55,7 @@ class SettingsSectionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsItem(BuildContext context, SettingsItemData item) {
+  Widget _buildSettingsItem(BuildContext context, SettingsItemData item, bool isDark) {
     return InkWell(
       onTap: item.onTap,
       borderRadius: BorderRadius.circular(24.r),
@@ -65,7 +66,7 @@ class SettingsSectionCard extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(10.w),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F8F7),
+                color: isDark ? const Color(0xFF2A2A2A) : const Color(0xFFE8F8F7),
                 borderRadius: BorderRadius.circular(12.r),
               ),
               child: SvgPicture.asset(
@@ -112,10 +113,14 @@ class SettingsSectionCard extends StatelessWidget {
     );
   }
 
-  Widget _buildDivider() {
+  Widget _buildDivider(bool isDark) {
     return Padding(
       padding: EdgeInsets.only(left: 64.w, right: 16.w),
-      child: Divider(height: 1, thickness: 1, color: Colors.grey.shade200),
+      child: Divider(
+        height: 1,
+        thickness: 1,
+        color: isDark ? Colors.grey.shade600 : Colors.grey.shade200,
+      ),
     );
   }
 }

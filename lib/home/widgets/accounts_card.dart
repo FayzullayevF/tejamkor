@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:tejamkor/core/data/models/accounts/account_model.dart';
+import 'package:tejamkor/core/utils/icon_mapper.dart';
 
 class AccountsCard extends StatelessWidget {
-  const AccountsCard({super.key});
+  final List<AccountModel> accounts;
+
+  const AccountsCard({super.key, required this.accounts});
 
   @override
   Widget build(BuildContext context) {
@@ -20,23 +24,22 @@ class AccountsCard extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 24),
           ),
           SizedBox(height: 10.h),
-          _buildAccountListItem(
-            "assets/icons/naqd_pul.svg",
-            "Naqd pul UZS",
-            "1 200 000 UZS",
-          ),
-          SizedBox(height: 5.h),
-          _buildAccountListItem(
-            "assets/icons/naqd_pul.svg",
-            "Naqd pul USD",
-            "250 USD",
-          ),
-          SizedBox(height: 5.h),
-          _buildAccountListItem(
-            "assets/icons/hamkorbank.svg",
-            "HAMKORBANK",
-            "3 000 000 UZS",
-          ),
+          if (accounts.isEmpty)
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              child: Text("Hali hisoblar qo'shilmagan"),
+            )
+          else
+            ...accounts.take(6).map((account) {
+              return Padding(
+                padding: EdgeInsets.only(bottom: 5.h),
+                child: _buildAccountListItem(
+                  IconMapper.getTejamkorIcon(account.type),
+                  account.name,
+                  "${account.balance} ${account.currencyCode}",
+                ),
+              );
+            }),
           SizedBox(height: 10.h),
           Text(
             "Barchasi",

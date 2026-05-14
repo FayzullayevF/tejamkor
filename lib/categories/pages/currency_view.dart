@@ -1,147 +1,201 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tejamkor/categories/widgets/currency_card.dart';
-import 'package:tejamkor/categories/widgets/search_card.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_event.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_state.dart';
+import 'package:tejamkor/categories/data/models/currency_model.dart';
 
-class CategoriesView extends StatefulWidget {
-  const CategoriesView({super.key, this.onNext});
-
-  final VoidCallback? onNext;
+class CurrencyView extends StatefulWidget {
+  const CurrencyView({super.key});
 
   @override
-  State<CategoriesView> createState() => _CategoriesViewState();
+  State<CurrencyView> createState() => _CurrencyViewState();
 }
 
-class _CategoriesViewState extends State<CategoriesView> {
-  String? selectedCurrencyCode;
+class _CurrencyViewState extends State<CurrencyView> {
+  String _searchQuery = "";
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<CurrencyBloc>().add(CurrencyFetched());
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<CurrencyBloc, CurrencyState>(
-      listener: (context, state) {
-        if (state.status == CurrencyStatus.updated) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Valyuta muvaffaqiyatli saqlandi!"),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-        if (state.status == CurrencyStatus.error) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Xatolik: ${state.errorMessage}"),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      },
+    return BlocBuilder<CurrencyBloc, CurrencyState>(
       builder: (context, state) {
-        if (state.status == CurrencyStatus.loading ||
-            state.status == CurrencyStatus.idle) {
+        if (state.status == CurrencyStatus.loading) {
           return const Center(
-            child: CircularProgressIndicator(color: Color(0xFF0ED2C9)),
+              child: CircularProgressIndicator(color: Color(0xFF0ED2C9)));
+        }
+
+        if (state.status == CurrencyStatus.error) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(state.errorMessage ?? "Xatolik yuz berdi"),
+                ElevatedButton(
+                  onPressed: () =>
+                      context.read<CurrencyBloc>().add(CurrencyFetched()),
+                  child: const Text("Qayta urinish"),
+                ),
+              ],
+            ),
           );
         }
 
         final currencies = state.response?.availableCurrencies ?? [];
+        final filteredCurrencies = currencies.where((c) {
+          return c.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+              c.code.toLowerCase().contains(_searchQuery.toLowerCase());
+        }).toList();
 
-        if (state.status == CurrencyStatus.error && currencies.isEmpty) {
-          return Center(child: Text("Xatolik: ${state.errorMessage}"));
-        }
-
-        // Agar tanlangan valyuta API dan kelgan bo'lsa va local state hali tanlanmagan bo'lsa
-        if (selectedCurrencyCode == null &&
-            state.response?.currencyDetail != null) {
-          selectedCurrencyCode = state.response!.currencyDetail!.code;
-        }
-
-        return SingleChildScrollView(
-          physics: const BouncingScrollPhysics(),
-          child: Column(
-            children: [
-              SearchCard(),
-              SizedBox(height: 20.h),
-              if (currencies.isEmpty)
-                const Center(child: Text("Hech qanday valyuta topilmadi"))
-              else
-                ...currencies.map((currency) {
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: 15.h),
-                    child: CurrencyCard(
-                      title: currency.name.isNotEmpty
-                          ? currency.name
-                          : currency.code,
-                      subtitle: currency.code,
-                      flagSvg: _getFlagSvg(currency.code),
-                      activeColor: _getActiveColor(currency.code),
-                      activeBgColor: _getActiveBgColor(currency.code),
-                      isSelected: selectedCurrencyCode == currency.code,
-                      onTap: () {
-                        setState(() {
-                          selectedCurrencyCode = currency.code;
-                        });
-                        context.read<CurrencyBloc>().add(
-                          CurrencyUpdated(currency),
-                        );
-                      },
+        return Column(
+          children: [
+            // Search Bar
+            Container(
+              height: 73.h,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF3F3F3),
+                borderRadius: BorderRadius.circular(40.r),
+                border: Border.all(color: const Color(0xFF7C7777).withOpacity(0.3)),
+              ),
+              child: TextField(
+                onChanged: (val) => setState(() => _searchQuery = val),
+                style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.w500),
+                decoration: InputDecoration(
+                  hintText: "Qidiruv",
+                  hintStyle: TextStyle(
+                    color: const Color(0xFF7C7777),
+                    fontSize: 18.sp,
+                  ),
+                  prefixIcon: Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: SvgPicture.asset(
+                      "assets/icons/search.svg",
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF7C7777),
+                        BlendMode.srcIn,
+                      ),
                     ),
-                  );
-                }),
-              SizedBox(height: 25.h),
-            ],
-          ),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: EdgeInsets.symmetric(vertical: 20.h),
+                ),
+              ),
+            ),
+            SizedBox(height: 32.h),
+
+            // Currency List
+            Expanded(
+              child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: filteredCurrencies.length,
+                itemBuilder: (context, index) {
+                  final currency = filteredCurrencies[index];
+                  final isSelected = state.selectedCurrencyId == currency.id;
+                  return _buildCurrencyItem(currency, isSelected);
+                },
+              ),
+            ),
+          ],
         );
       },
     );
   }
 
-  String _getFlagSvg(String code) {
-    switch (code) {
-      case "UZS":
-        return "assets/icons/uzb_flag.svg";
-      case "RUB":
-        return "assets/icons/rus_flag.svg";
-      case "USD":
-        return "assets/icons/usa_flag.svg";
-      case "EUR":
-        return "assets/icons/euro_flag.svg";
+  Widget _buildCurrencyItem(CurrencyModel currency, bool isSelected) {
+    String flagAsset = "";
+    switch (currency.code) {
+      case 'UZS':
+        flagAsset = "assets/icons/uzb_flag.svg";
+        break;
+      case 'RUB':
+        flagAsset = "assets/icons/rus_flag.svg";
+        break;
+      case 'USD':
+        flagAsset = "assets/icons/usa_flag.svg";
+        break;
+      case 'EUR':
+        flagAsset = "assets/icons/euro_flag.svg";
+        break;
       default:
-        return "assets/icons/uzb_flag.svg"; // fallback
+        flagAsset = "assets/icons/uzb_flag.svg";
     }
-  }
 
-  Color _getActiveColor(String code) {
-    switch (code) {
-      case "UZS":
-        return const Color(0xFF0ED2C9); // Yashilroq
-      case "RUB":
-        return const Color(0xffE91E63); // Pushti
-      case "USD":
-        return const Color(0xff2196F3); // Ko'k
-      case "EUR":
-        return const Color(0xff9C27B0); // Binafsha
-      default:
-        return const Color(0xFF0ED2C9);
-    }
-  }
-
-  Color _getActiveBgColor(String code) {
-    switch (code) {
-      case "UZS":
-        return const Color(0xFF0ED2C9).withValues(alpha: 0.1);
-      case "RUB":
-        return const Color(0xffFCE4EC);
-      case "USD":
-        return const Color(0xffE3F2FD);
-      case "EUR":
-        return const Color(0xffF3E5F5);
-      default:
-        return const Color(0xFF0ED2C9).withValues(alpha: 0.1);
-    }
+    return GestureDetector(
+      onTap: () {
+        context.read<CurrencyBloc>().add(CurrencySelected(currency.id));
+      },
+      child: Container(
+        margin: EdgeInsets.only(bottom: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFE2F9EB).withOpacity(0.3) : Colors.white,
+          borderRadius: BorderRadius.circular(40.r),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF0FBC5F) : const Color(0xFFF3F3F3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            SvgPicture.asset(flagAsset, width: 60.w, height: 60.w),
+            SizedBox(width: 16.w),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    currency.name,
+                    style: TextStyle(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                  Text(
+                    currency.code,
+                    style: TextStyle(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF7C7777),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 32.w,
+              height: 32.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? const Color(0xFF0FBC5F) : const Color(0xFFD1D1D1),
+                  width: 2,
+                ),
+              ),
+              child: isSelected
+                  ? Center(
+                      child: Container(
+                        width: 16.w,
+                        height: 16.w,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF0FBC5F),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(Icons.check, color: Colors.white, size: 12.w),
+                      ),
+                    )
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

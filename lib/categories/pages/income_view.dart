@@ -8,10 +8,14 @@ import 'package:tejamkor/categories/widgets/category_card.dart';
 import 'package:tejamkor/core/utils/icon_mapper.dart';
 
 class IncomeView extends StatelessWidget {
-  const IncomeView({super.key, required this.selectedIds, required this.onToggle});
-
   final Set<int> selectedIds;
   final Function(int) onToggle;
+
+  const IncomeView({
+    super.key,
+    required this.selectedIds,
+    required this.onToggle,
+  });
 
   Widget _buildIcon(String categoryName) {
     return SvgPicture.asset(IconMapper.getTejamkorIcon(categoryName));
@@ -21,18 +25,32 @@ class IncomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<CategoryBloc, CategoryState>(
       builder: (context, state) {
-        if (state.status == CategoryStatus.loading || state.status == CategoryStatus.idle) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFF0ED2C9)));
+        if (state.status == CategoryStatus.loading ||
+            state.status == CategoryStatus.idle) {
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFF0ED2C9)),
+          );
         }
 
         if (state.status == CategoryStatus.error) {
-          return Center(child: Text("Xatolik: ${state.errorMessage}"));
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                state.errorMessage ?? "Kategoriyalarni yuklashda xatolik yuz berdi",
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.red),
+              ),
+            ),
+          );
         }
 
-        final incomes = state.categories.where((c) => c.type == 'income').take(20).toList();
+        final incomes = state.categories.where((c) => c.type == 'income').toList();
 
         if (incomes.isEmpty) {
-          return const Center(child: Text("Hech qanday daromad kategoriyasi yo'q"));
+          return const Center(
+            child: Text("Hech qanday daromad kategoriyasi yo'q"),
+          );
         }
 
         return Column(
@@ -69,7 +87,7 @@ class IncomeView extends StatelessWidget {
                 color: const Color(0xffDFF9FA),
                 borderRadius: BorderRadius.circular(30),
               ),
-              child: Text(
+              child: const Text(
                 "Keyinchalik sozlamalarda kategoriyalarni\ntahrirlash va yangilarini qo'shishingiz mumkin",
                 textAlign: TextAlign.center,
                 style: TextStyle(

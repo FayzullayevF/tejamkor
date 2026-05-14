@@ -15,7 +15,10 @@ class Routers {
   static const statistics = "/statistics";
   static const transactionHistory = "/transactionHistory";
   static const transactionCategories = "/transactionCategories";
-
-
-
+  
+  // Settings pages
+  static const accountSecurity = "/accountSecurity";
+  static const notificationSettings = "/notificationSettings";
+  static const linkedAccounts = "/linkedAccounts";
+  static const privacyPolicy = "/privacyPolicy";
 }

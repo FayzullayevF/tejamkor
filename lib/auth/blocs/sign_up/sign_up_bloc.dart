@@ -31,6 +31,7 @@ class SignUpBloc extends Bloc<SignUpEvent, SignUpState> {
         await _repo.login(
           login: emailController.text.trim(),
           password: passwordController.text.trim(),
+          name: fullNameController.text.trim(),
         );
         emit(state.copyWith(status: SignUpStatus.success));
       } else {

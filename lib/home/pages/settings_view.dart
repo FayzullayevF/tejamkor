@@ -4,12 +4,14 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tejamkor/core/data/repos/auth_repository.dart';
 import 'package:tejamkor/core/routing/router.dart';
+import 'package:tejamkor/core/secure_storage.dart';
 import 'package:tejamkor/core/theme_notifier.dart';
 import 'package:tejamkor/widgets/custom_navi_bar.dart';
 
 import '../widgets/settings_profile_header.dart';
 import '../widgets/settings_section_card.dart';
 import '../widgets/settings_logout_button.dart';
+import 'package:tejamkor/widgets/app_snackbar.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});
@@ -18,7 +20,9 @@ class SettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isDark = Theme.of(context).brightness == Brightness.dark;
     final Color textColor = isDark ? Colors.white : Colors.black;
-    final Color subtitleColor = isDark ? Colors.white54 : const Color(0xFF7C7777);
+    final Color subtitleColor = isDark
+        ? Colors.white54
+        : const Color(0xFF7C7777);
     final Color cardColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
 
     return Scaffold(
@@ -34,12 +38,26 @@ class SettingsView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: 10.h),
-                SettingsProfileHeader(
-                  name: "Daler Xusinov",
-                  email: "dalerxusinov@gmail.com",
-                  textColor: textColor,
-                  subtitleColor: subtitleColor,
+                FutureBuilder(
+                  future: Future.wait([
+                    AppSecureStorage.getName(),
+                    AppSecureStorage.getLogin(),
+                  ]),
+                  builder: (context, AsyncSnapshot<List<String?>> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const SizedBox();
+                    }
+                    final name = snapshot.data?[0] ?? "";
+                    final email = snapshot.data?[1] ?? "";
+                    return SettingsProfileHeader(
+                      name: name,
+                      email: email,
+                      textColor: textColor,
+                      subtitleColor: subtitleColor,
+                    );
+                  },
                 ),
+
                 SizedBox(height: 32.h),
                 SettingsSectionCard(
                   title: "AKKAUNT SOZLAMALARI",
@@ -51,16 +69,19 @@ class SettingsView extends StatelessWidget {
                       icon: "assets/icons/s_shield.svg",
                       title: "Akkaunt xavfsizligi",
                       subtitle: "Biometrics & 2FA active",
+                      onTap: () => context.push(Routers.accountSecurity),
                     ),
                     SettingsItemData(
                       icon: "assets/icons/notification.svg",
                       title: "Bildirishnoma sozlamalari",
                       subtitle: "Alerts, sounds & badges",
+                      onTap: () => context.push(Routers.notificationSettings),
                     ),
                     SettingsItemData(
                       icon: "assets/icons/bank.svg",
                       title: "Bog'langan akkauntlar",
                       subtitle: "3 ta bank ulangan",
+                      onTap: () => context.push(Routers.linkedAccounts),
                     ),
                   ],
                 ),
@@ -75,10 +96,12 @@ class SettingsView extends StatelessWidget {
                       icon: "assets/icons/moon.svg",
                       title: "Theme",
                       subtitle: isDark ? "Dark Mode" : "Light Mode",
-                      onTap: () => context.read<ThemeNotifier>().toggleTheme(!isDark),
+                      onTap: () =>
+                          context.read<ThemeNotifier>().toggleTheme(!isDark),
                       trailing: Switch(
                         value: isDark,
-                        onChanged: (val) => context.read<ThemeNotifier>().toggleTheme(val),
+                        onChanged: (val) =>
+                            context.read<ThemeNotifier>().toggleTheme(val),
                         activeThumbColor: const Color(0xFF0ED2C9),
                       ),
                     ),
@@ -86,7 +109,12 @@ class SettingsView extends StatelessWidget {
                       icon: "assets/icons/search_shield.svg",
                       title: "Privacy Policy",
                       subtitle: "Updated July 2024",
-                      trailing: Icon(Icons.open_in_new, color: Colors.grey.shade400, size: 20.w),
+                      onTap: () => context.push(Routers.privacyPolicy),
+                      trailing: Icon(
+                        Icons.open_in_new,
+                        color: Colors.grey.shade400,
+                        size: 20.w,
+                      ),
                     ),
                   ],
                 ),
@@ -108,6 +136,8 @@ class SettingsView extends StatelessWidget {
         onTap: (index) {
           if (index == 0) context.go(Routers.home);
           if (index == 1) context.go(Routers.transactionHistory);
+          if (index == 2) context.go(Routers.monthlyLimit);
+          if (index == 3) context.go(Routers.statistics);
         },
       ),
     );
@@ -120,9 +150,7 @@ class SettingsView extends StatelessWidget {
       if (context.mounted) context.go(Routers.login);
     } catch (_) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Akkountdan chiqishda xatolik yuz berdi")),
-        );
+        AppSnackbar.showError(context, "Akkountdan chiqishda xatolik yuz berdi");
       }
     }
   }

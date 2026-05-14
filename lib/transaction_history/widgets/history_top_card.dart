@@ -45,7 +45,7 @@ class HistoryTopCard extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
+              color: Colors.white.withOpacity( 0.2),
               borderRadius: BorderRadius.circular(20.r),
             ),
             child: Row(

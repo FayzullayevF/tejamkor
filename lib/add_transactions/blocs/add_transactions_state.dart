@@ -25,11 +25,11 @@ class TransactionSubmitSuccess extends TransactionState {
 }
 
 class TransactionsLoadSuccess extends TransactionState {
-  final List<TransactionModel> transactions;
-  const TransactionsLoadSuccess(this.transactions);
+  final TransactionHistoryResponse response;
+  const TransactionsLoadSuccess(this.response);
 
   @override
-  List<Object?> get props => [transactions];
+  List<Object?> get props => [response];
 }
 
 class TransactionLoadSuccess extends TransactionState {

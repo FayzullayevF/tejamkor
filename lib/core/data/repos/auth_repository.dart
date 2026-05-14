@@ -15,7 +15,7 @@ class AuthRepository {
 
   String? jwt;
 
-  Future<void> login({required String login, required String password}) async {
+  Future<void> login({required String login, required String password, String? name}) async {
     final tokens = await client.login(
       LoginModel(login: login, password: password),
     );
@@ -24,6 +24,7 @@ class AuthRepository {
       accessToken: tokens.accessToken,
       refreshToken: tokens.refreshToken,
       login: login,
+      name: name,
     );
 
     jwt = tokens.accessToken;

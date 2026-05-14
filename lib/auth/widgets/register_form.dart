@@ -7,6 +7,7 @@ import 'package:tejamkor/auth/blocs/sign_up/sign_up_state.dart';
 import '../../widgets/app_button.dart';
 import 'auth_text_field.dart';
 import 'show_error_dialog.dart';
+import 'package:tejamkor/widgets/app_snackbar.dart';
 
 class RegisterForm extends StatelessWidget {
   const RegisterForm({
@@ -56,9 +57,7 @@ class _RegisterFormBodyState extends State<_RegisterFormBody> {
 
       if (bloc.passwordController.text.trim() !=
           bloc.passwordConfirmController.text.trim()) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("Parollar mos emas")));
+        AppSnackbar.showError(context, "Parollar mos emas");
         return;
       }
 

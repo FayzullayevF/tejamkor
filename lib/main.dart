@@ -5,9 +5,13 @@ import 'package:tejamkor/core/dependencies.dart';
 import 'package:tejamkor/core/routing/routes.dart';
 import 'package:tejamkor/core/theme_notifier.dart';
 
+import 'package:intl/date_symbol_data_local.dart';
+
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('uz', null);
   runApp(const MyApp());
 }
 

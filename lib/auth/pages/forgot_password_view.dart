@@ -11,6 +11,7 @@ import 'package:tejamkor/auth/widgets/show_otp_dialog.dart';
 import 'package:tejamkor/auth/widgets/show_error_dialog.dart';
 import 'package:tejamkor/core/routing/router.dart';
 import 'package:tejamkor/widgets/app_button.dart';
+import 'package:tejamkor/widgets/app_snackbar.dart';
 
 import '../../core/utils/app_colors.dart';
 
@@ -132,9 +133,7 @@ class _ForgotPasswordViewState extends State<ForgotPasswordView> {
                         voidCallback: () {
                           final email = bloc.emailController.text.trim();
                           if (email.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Email kiriting")),
-                            );
+                            AppSnackbar.showError(context, "Email kiriting");
                             return;
                           }
                           context.read<ForgotPasswordBloc>().add(

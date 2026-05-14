@@ -9,6 +9,7 @@ import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_bloc.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_event.dart';
 import 'package:tejamkor/auth/blocs/forgot_password/forgot_password_state.dart';
 import 'package:tejamkor/core/routing/router.dart';
+import 'package:tejamkor/widgets/app_snackbar.dart';
 import 'show_error_dialog.dart';
 
 Future<String?> showOtpDialog({
@@ -144,7 +145,7 @@ class _OtpVerifyDialogState extends State<OtpVerifyDialog> {
   }
 
   void _snack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    AppSnackbar.showError(context, msg);
   }
 
   @override
@@ -172,7 +173,7 @@ class _OtpVerifyDialogState extends State<OtpVerifyDialog> {
               BoxShadow(
                 blurRadius: 30,
                 offset: const Offset(0, 18),
-                color: Colors.black.withValues(alpha: 0.25),
+                color: Colors.black.withOpacity( 0.25),
               ),
             ],
           ),

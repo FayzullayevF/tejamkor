@@ -1,28 +1,25 @@
 class CategoryModel {
   final int id;
   final String name;
-  final String type;
-  final String icon;
-  final String color;
-  final int user;
+  final String type; // 'expense' or 'income'
+  final String? icon;
+  final String? color;
 
   CategoryModel({
     required this.id,
     required this.name,
     required this.type,
-    required this.icon,
-    required this.color,
-    required this.user,
+    this.icon,
+    this.color,
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
-      id: json['id'] ?? 0,
-      name: json['name'] ?? '',
-      type: json['type'] ?? 'expense',
-      icon: json['icon'] ?? '',
-      color: json['color'] ?? '',
-      user: json['user'] ?? 0,
+      id: json['id'] as int? ?? 0,
+      name: json['name']?.toString() ?? '',
+      type: json['type']?.toString() ?? 'expense',
+      icon: json['icon']?.toString(),
+      color: json['color']?.toString(),
     );
   }
 
@@ -33,7 +30,6 @@ class CategoryModel {
       'type': type,
       'icon': icon,
       'color': color,
-      'user': user,
     };
   }
 }

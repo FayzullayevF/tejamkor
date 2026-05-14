@@ -4,16 +4,22 @@ import 'package:go_router/go_router.dart';
 import 'package:tejamkor/core/routing/router.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tejamkor/auth/widgets/auth_app_bar.dart';
-import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
-import 'package:tejamkor/categories/blocs/category/category_event.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_bloc.dart';
 import 'package:tejamkor/categories/blocs/currency/currency_event.dart';
+import 'package:tejamkor/categories/blocs/currency/currency_state.dart';
+import 'package:tejamkor/categories/blocs/category/category_bloc.dart';
+import 'package:tejamkor/categories/blocs/category/category_event.dart';
+
 import 'package:tejamkor/widgets/app_button.dart';
 import 'package:tejamkor/categories/widgets/header.dart';
 import 'package:tejamkor/categories/data/repositories/category_repository.dart';
-import 'currency_view.dart';
-import 'categories_view.dart';
-import 'income_view.dart';
+import 'package:tejamkor/categories/data/repositories/currency_repository.dart';
+
+import 'package:tejamkor/widgets/app_snackbar.dart';
+
+import 'package:tejamkor/categories/pages/currency_view.dart';
+import 'package:tejamkor/categories/pages/expense_view.dart';
+import 'package:tejamkor/categories/pages/income_view.dart';
 
 class AllCategoriesView extends StatefulWidget {
   const AllCategoriesView({super.key});
@@ -32,7 +38,6 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
   void initState() {
     super.initState();
     context.read<CategoryBloc>().add(CategoriesFetched());
-    context.read<CurrencyBloc>().add(CurrencyFetched());
   }
 
   void _toggleSelection(int id) {
@@ -47,7 +52,37 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
 
   Future<void> _nextPage() async {
     FocusScope.of(context).unfocus();
-    if (_currentIndex < 2) {
+    if (_currentIndex == 0) {
+      final currencyState = context.read<CurrencyBloc>().state;
+      if (currencyState.selectedCurrencyId != null) {
+        setState(() => _isLoading = true);
+        try {
+          // We can use the repository directly to ensure it completes before moving on
+          final repo = context.read<CurrencyRepository>();
+          await repo.updateUserCurrency(currencyState.selectedCurrencyId!);
+          
+          // Also update the bloc state so other components know
+          if (mounted) {
+            context.read<CurrencyBloc>().add(CurrencyFetched());
+            _pageController.nextPage(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          }
+        } catch (e) {
+          if (mounted) {
+            AppSnackbar.showError(context, "Valyutani saqlashda xatolik: $e");
+          }
+        } finally {
+          if (mounted) setState(() => _isLoading = false);
+        }
+      } else {
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+    } else if (_currentIndex < 2) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -60,15 +95,22 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
         try {
           final repo = context.read<CategoryRepository>();
           await repo.selectDefaultCategories(_selectedIds.toList());
+          if (mounted) context.go(Routers.home);
         } catch (e) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+          AppSnackbar.showError(
+            context,
+            e.toString().replaceAll("Exception: ", ""),
+          );
         } finally {
-          setState(() {
-            _isLoading = false;
-          });
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+          }
         }
+      } else {
+        if (mounted) context.go(Routers.home);
       }
-      if (mounted) context.go(Routers.home);
     }
   }
 
@@ -109,19 +151,31 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) {
-                  setState(() {
-                    _currentIndex = index;
-                  });
+                  if (_currentIndex != index) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        setState(() {
+                          _currentIndex = index;
+                        });
+                      }
+                    });
+                  }
                 },
                 children: [
-                   CategoriesView(), // This is the generic view, wait what is CategoriesView in this context?
-                  ExpenseView(selectedIds: _selectedIds, onToggle: _toggleSelection),
-                  IncomeView(selectedIds: _selectedIds, onToggle: _toggleSelection),
+                  const CurrencyView(),
+                  ExpenseView(
+                    selectedIds: _selectedIds,
+                    onToggle: _toggleSelection,
+                  ),
+                  IncomeView(
+                    selectedIds: _selectedIds,
+                    onToggle: _toggleSelection,
+                  ),
                 ],
               ),
             ),
             SizedBox(height: 16.h),
-            _isLoading 
+            _isLoading
                 ? const CircularProgressIndicator(color: Color(0xFF0ED2C9))
                 : AppButton(
                     height: 73.h,

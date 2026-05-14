@@ -31,20 +31,29 @@ class CategoryContainer extends StatelessWidget {
     final isNegative = percent < 0;
 
     // 🔥 percent rang logikasi
-    final percentColor = isPositive
-        ? Colors.red
+    // Expense increase (+) is red, decrease (-) is green
+    final displayPercentColor = isPositive
+        ? const Color(0xffBA1A1A)
         : isNegative
-        ? Colors.green
-        : Colors.grey;
+            ? const Color(0xff0FBC5F)
+            : Colors.grey;
 
     final percentPrefix = isPositive ? "+" : "";
-    
-    // 🔥 Icon handling: check if it's network or asset
+
+    // 🔥 Icon handling: check if it's network or asset, and APPLY TINT
     Widget iconWidget;
     if (icon.startsWith('http')) {
-      iconWidget = SvgPicture.network(icon, height: 22);
+      iconWidget = SvgPicture.network(
+        icon,
+        height: 22.w,
+        colorFilter: ColorFilter.mode(sliderColor, BlendMode.srcIn),
+      );
     } else {
-      iconWidget = SvgPicture.asset(icon, height: 22);
+      iconWidget = SvgPicture.asset(
+        icon,
+        height: 22.w,
+        colorFilter: ColorFilter.mode(sliderColor, BlendMode.srcIn),
+      );
     }
 
     return Container(
@@ -52,7 +61,7 @@ class CategoryContainer extends StatelessWidget {
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -61,7 +70,7 @@ class CategoryContainer extends StatelessWidget {
             height: 48.w,
             width: 48.w,
             decoration: BoxDecoration(
-              color: containerColor.withValues(alpha: 0.15),
+              color: sliderColor.withOpacity( 0.1),
               shape: BoxShape.circle,
             ),
             child: Center(child: iconWidget),
@@ -99,7 +108,7 @@ class CategoryContainer extends StatelessWidget {
                             maxLines: 1,
                             style: TextStyle(
                               fontSize: 12.sp,
-                              color: Colors.grey,
+                              color: const Color(0xff70797B),
                             ),
                           ),
                         ],
@@ -123,11 +132,11 @@ class CategoryContainer extends StatelessWidget {
                           ),
                           SizedBox(height: 4.h),
                           Text(
-                            "$percentPrefix$percent%",
+                            "$percentPrefix${percent.toStringAsFixed(1)}%",
                             style: TextStyle(
-                              fontSize: 10.sp,
+                              fontSize: 12.sp,
                               fontWeight: FontWeight.w700,
-                              color: percentColor,
+                              color: displayPercentColor,
                             ),
                           ),
                         ],
@@ -139,30 +148,22 @@ class CategoryContainer extends StatelessWidget {
                 SizedBox(height: 10.h),
 
                 // 🔥 PROGRESS BAR
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      // Adjust progress if > 1.0
-                      final adjustedProgress = progress > 1 ? progress / 100 : progress;
-                      return Stack(
-                        children: [
-                          // background
-                          Container(
-                            height: 6.h,
-                            width: double.infinity,
-                            color: const Color(0xffE5E9EA),
-                          ),
-
-                          // progress
-                          Container(
-                            height: 6.h,
-                            width: constraints.maxWidth * adjustedProgress.clamp(0.0, 1.0),
-                            color: sliderColor,
-                          ),
-                        ],
-                      );
-                    },
+                Container(
+                  height: 6.h,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    color: const Color(0xffE5E9EA),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: progress.clamp(0.0, 1.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: sliderColor,
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                    ),
                   ),
                 ),
               ],
