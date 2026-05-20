@@ -16,7 +16,7 @@ plugins {
 
 android {
 
-    namespace = "com.example.tejamkor"
+    namespace = "com.tejamkor.finance"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -30,7 +30,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.tejamkor"
+        applicationId = "com.tejamkor.finance"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
