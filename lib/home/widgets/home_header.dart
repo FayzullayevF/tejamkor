@@ -31,8 +31,8 @@ class HomeHeader extends StatelessWidget {
           greeting,
           style: TextStyle(
             color: Colors.white,
-            fontSize: 16.sp,
-            fontWeight: FontWeight.w500,
+            fontSize: 24,
+            fontWeight: FontWeight.w400,
           ),
         ),
         CircleAvatar(

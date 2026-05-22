@@ -10,11 +10,12 @@ class HomeBalance extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
+        SizedBox(height: 15.h,),
         Text(
           "Umumiy hisob",
           style: TextStyle(
             color: Colors.white.withOpacity( 0.8),
-            fontSize: 13.sp,
+            fontSize: 20,
             fontWeight: FontWeight.w400,
           ),
         ),
@@ -23,7 +24,7 @@ class HomeBalance extends StatelessWidget {
           "${balance.toStringAsFixed(0)} $currency",
           style: TextStyle(
             color: Colors.white,
-            fontSize: 32.sp,
+            fontSize: 36,
             fontWeight: FontWeight.w700,
           ),
         ),

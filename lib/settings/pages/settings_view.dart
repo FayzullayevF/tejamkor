@@ -7,11 +7,11 @@ import 'package:tejamkor/core/routing/router.dart';
 import 'package:tejamkor/core/secure_storage.dart';
 import 'package:tejamkor/core/theme_notifier.dart';
 import 'package:tejamkor/widgets/custom_navi_bar.dart';
-
-import '../widgets/settings_profile_header.dart';
-import '../widgets/settings_section_card.dart';
-import '../widgets/settings_logout_button.dart';
 import 'package:tejamkor/widgets/app_snackbar.dart';
+
+import '../../home/widgets/settings_logout_button.dart';
+import '../../home/widgets/settings_profile_header.dart';
+import '../../home/widgets/settings_section_card.dart';
 
 class SettingsView extends StatelessWidget {
   const SettingsView({super.key});

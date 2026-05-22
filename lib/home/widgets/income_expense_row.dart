@@ -44,6 +44,8 @@ class IncomeExpenseRow extends StatelessWidget {
     required bool isExpense,
   }) {
     return Container(
+      width: 180.w,
+      height: 80.h,
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -64,27 +66,27 @@ class IncomeExpenseRow extends StatelessWidget {
               SvgPicture.asset(
                 isExpense ? 'assets/icons/xarajat_icon.svg' : 'assets/icons/daromad_icon.svg',
                 colorFilter: ColorFilter.mode(isExpense ? Colors.red : Colors.green, BlendMode.srcIn),
-                width: 14.w,
-                height: 14.w,
+                width: 18.w,
+                height: 18.w,
               ),
               SizedBox(width: 4.w),
               Text(
                 title,
                 style: TextStyle(
                   color: isExpense ? Colors.red : Colors.green,
-                  fontSize: 12.sp,
-                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
                 ),
               ),
             ],
           ),
-          SizedBox(height: 6.h),
+          SizedBox(height: 8.h),
           Text(
             amount,
             style: TextStyle(
               color: Colors.black,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w700,
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],

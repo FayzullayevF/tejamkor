@@ -25,14 +25,13 @@ class RemainingProgressCard extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
             blurRadius: 20,
-            offset: const Offset(0, 10),
+            offset:  Offset(0, 10),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // 1. Yuqori qismdagi ma'lumotlar
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
             child: Column(
@@ -131,11 +130,10 @@ class RemainingProgressCard extends StatelessWidget {
           ),
 
           SizedBox(
-            height: 90.h, // Fixed height to avoid overflow issues
+            height: 90.h,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                // Yashil chiziq
                 Align(
                   alignment: Alignment.bottomCenter,
                   child: Container(
@@ -156,7 +154,7 @@ class RemainingProgressCard extends StatelessWidget {
                         bottomLeft: Radius.circular(24),
                       ),
                     ),
-                    child: const Text(
+                    child:  Text(
                       "Tejamkor Score",
                       style: TextStyle(
                         color: Colors.white,
@@ -171,39 +169,56 @@ class RemainingProgressCard extends StatelessWidget {
                   right: 0,
                   bottom: -25.h,
                   child: Container(
-                    width: 110.h,
-                    height: 110.h,
-                    decoration: BoxDecoration(
+                    width: 120.w,
+                    height: 120.w,
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
                         colors: [
-                          Color.fromARGB(255, 15, 17, 28),
-                          Color(0xFF0FBC5F),
+                          Color(0xFF29E07F),
+                          Color(0xFF0B0D17),
                         ],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
                     ),
+
                     child: Padding(
-                      padding: EdgeInsets.all(3.w), // 3px border effect
+                      padding: EdgeInsets.all(4.w),
+
                       child: Container(
-                        alignment: Alignment.center,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF0FBC5F), Color(0xFF0B0D17)],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
+                          color: const Color(0xFF0B0D17).withOpacity(0.55),
                         ),
-                        child: Text(
-                          "${tejamkorScore.score}",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 42,
-                            fontWeight: FontWeight.w800,
-                            height: 1.0,
-                            letterSpacing: -1,
+
+                        child: Padding(
+                          padding: EdgeInsets.all(6.w),
+
+                          child: Container(
+                            alignment: Alignment.center,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: LinearGradient(
+                                colors: [
+                                  Color(0xFF1ED760),
+                                  Color(0xFF0B0D17),
+                                ],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                            ),
+
+                            child: Text(
+                              "${tejamkorScore.score}",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 42.sp,
+                                fontWeight: FontWeight.w800,
+                                height: 1,
+                                letterSpacing: -1,
+                              ),
+                            ),
                           ),
                         ),
                       ),
