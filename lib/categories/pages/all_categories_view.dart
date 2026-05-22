@@ -140,51 +140,57 @@ class _AllCategoriesViewState extends State<AllCategoriesView> {
         voidCallback: _previousPage,
         backArrowColor: Colors.black,
       ),
-      body: Padding(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
-        child: Column(
-          children: [
-            Header(currentPage: _currentIndex),
-            SizedBox(height: 24.h),
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) {
-                  if (_currentIndex != index) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        setState(() {
-                          _currentIndex = index;
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 10.h),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Header(currentPage: _currentIndex),
+                SizedBox(height: 24.h),
+                SizedBox(
+                  height: 450.h, // Give the PageView a fixed height to work with scroll
+                  child: PageView(
+                    controller: _pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (index) {
+                      if (_currentIndex != index) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            setState(() {
+                              _currentIndex = index;
+                            });
+                          }
                         });
                       }
-                    });
-                  }
-                },
-                children: [
-                  const CurrencyView(),
-                  ExpenseView(
-                    selectedIds: _selectedIds,
-                    onToggle: _toggleSelection,
+                    },
+                    children: [
+                      const CurrencyView(),
+                      ExpenseView(
+                        selectedIds: _selectedIds,
+                        onToggle: _toggleSelection,
+                      ),
+                      IncomeView(
+                        selectedIds: _selectedIds,
+                        onToggle: _toggleSelection,
+                      ),
+                    ],
                   ),
-                  IncomeView(
-                    selectedIds: _selectedIds,
-                    onToggle: _toggleSelection,
-                  ),
-                ],
-              ),
+                ),
+                SizedBox(height: 24.h),
+                _isLoading
+                    ? const CircularProgressIndicator(color: Color(0xFF0ED2C9))
+                    : AppButton(
+                        height: 73.h,
+                        weight: double.infinity,
+                        title: "Keyingi sahifaga o'tish",
+                        voidCallback: _nextPage,
+                      ),
+                SizedBox(height: 20.h),
+              ],
             ),
-            SizedBox(height: 16.h),
-            _isLoading
-                ? const CircularProgressIndicator(color: Color(0xFF0ED2C9))
-                : AppButton(
-                    height: 73.h,
-                    weight: double.infinity,
-                    title: "Keyingi sahifaga o'tish",
-                    voidCallback: _nextPage,
-                  ),
-            SizedBox(height: 20.h),
-          ],
+          ),
         ),
       ),
     );

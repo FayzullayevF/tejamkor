@@ -62,7 +62,7 @@ class IncomeView extends StatelessWidget {
                   crossAxisCount: 3,
                   mainAxisSpacing: 16.h,
                   crossAxisSpacing: 16.w,
-                  childAspectRatio: 1,
+                  childAspectRatio: 1.1,
                 ),
                 itemCount: incomes.length,
                 itemBuilder: (context, index) {

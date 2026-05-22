@@ -8,7 +8,8 @@ class AppSecureStorage {
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
+      encryptedSharedPreferences: false,
+      resetOnError: true,
     ),
   );
 

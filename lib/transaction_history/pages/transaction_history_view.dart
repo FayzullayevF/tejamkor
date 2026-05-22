@@ -92,7 +92,9 @@ class _TransactionHistoryViewState extends State<TransactionHistoryView>
           if (state is TransactionsLoading) {
             isLoading = true;
           } else if (state is TransactionsLoadSuccess) {
-            allResults = state.response.results;
+            allResults = List<TransactionModel>.from(state.response.results);
+            // Sort by date descending (newest first)
+            allResults.sort((a, b) => b.dateTime.compareTo(a.dateTime));
             summary = state.response.summary;
           } else if (state is TransactionError) {
             errorMsg = state.message;
@@ -119,20 +121,23 @@ class _TransactionHistoryViewState extends State<TransactionHistoryView>
                       ? const Center(child: CircularProgressIndicator(color: Color(0xFF0ED2C9)))
                       : errorMsg != null
                           ? _buildError(errorMsg)
-                          : _buildTransactionList(
-                              _tabController.index == 0 ? expenseList : incomeList,
-                              _tabController.index == 1,
+                          : RefreshIndicator(
+                              onRefresh: () async {
+                                context.read<TransactionBloc>().add(GetAllTransactionsEvent());
+                                // Wait for the state to change from Loading back to Success
+                                await context.read<TransactionBloc>().stream.firstWhere(
+                                  (state) => state is TransactionsLoadSuccess || state is TransactionError,
+                                );
+                              },
+                              child: _buildTransactionList(
+                                _tabController.index == 0 ? expenseList : incomeList,
+                                _tabController.index == 1,
+                              ),
                             ),
                 ),
               ],
             ),
           );
-        },
-      ),
-      bottomNavigationBar: CustomNavBar(
-        currentIndex: 1,
-        onTap: (index) {
-          // Navigatsiya logic CustomNavBar'ning ichida hal qilingan
         },
       ),
     );
@@ -305,10 +310,16 @@ class _TransactionHistoryViewState extends State<TransactionHistoryView>
   // ─────────────────── Transaction List ───────────────────
   Widget _buildTransactionList(List<TransactionModel> list, bool isIncome) {
     if (list.isEmpty) {
-      return Center(
-        child: Text(
-          isIncome ? "Daromadlar topilmadi" : "Xarajatlar topilmadi",
-          style: TextStyle(color: Colors.grey, fontSize: 16.sp),
+      return SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: 400.h,
+          child: Center(
+            child: Text(
+              isIncome ? "Daromadlar topilmadi" : "Xarajatlar topilmadi",
+              style: TextStyle(color: Colors.grey, fontSize: 16.sp),
+            ),
+          ),
         ),
       );
     }

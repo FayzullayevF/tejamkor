@@ -38,15 +38,22 @@ class CategoryCard extends StatelessWidget {
             icon is IconData
                 ? Icon(icon as IconData, size: 36.w, color: Colors.black)
                 : icon as Widget,
-            SizedBox(height: 8.h),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-                color: Colors.black,
+            SizedBox(height: 4.h),
+            Flexible(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 4.w),
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w400,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),

@@ -47,11 +47,33 @@ class AccountModel {
       else if (uppercaseName.endsWith(' UZS')) code = 'UZS';
     }
 
+    // Clean up the balance string (remove spaces, handle commas/dots)
+    String rawBalance = json['balance']?.toString() ?? '0.0';
+    // Remove all spaces and thousand separators (dots followed by 3 digits)
+    String cleanBalance = rawBalance.replaceAll(RegExp(r'\s+'), '');
+    if (cleanBalance.contains(',') && cleanBalance.contains('.')) {
+      // Format like 1,234.56 or 1.234,56
+      if (cleanBalance.indexOf(',') < cleanBalance.indexOf('.')) {
+        cleanBalance = cleanBalance.replaceAll(',', ''); // 1234.56
+      } else {
+        cleanBalance = cleanBalance.replaceAll('.', '').replaceAll(',', '.'); // 1234.56
+      }
+    } else if (cleanBalance.contains(',')) {
+      // If only comma, check if it's decimal or thousand separator
+      // Usually decimal if it's near the end and only one
+      final parts = cleanBalance.split(',');
+      if (parts.length == 2 && parts[1].length <= 2) {
+        cleanBalance = cleanBalance.replaceAll(',', '.');
+      } else {
+        cleanBalance = cleanBalance.replaceAll(',', '');
+      }
+    }
+
     return AccountModel(
       id: json['id'] as int,
       name: name,
       type: json['type'] as String? ?? '',
-      balance: json['balance']?.toString() ?? '0.0',
+      balance: cleanBalance,
       currencyCode: code,
       cardNumber: json['card_number'] as String?,
       bankAccountNumber: json['bank_account_number'] as String?,

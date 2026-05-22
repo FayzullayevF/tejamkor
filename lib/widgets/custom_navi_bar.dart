@@ -98,21 +98,6 @@ class CustomNavBar extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         onTap(index);
-
-        switch (index) {
-          case 0:
-            context.go(Routers.home);
-            break;
-          case 1:
-            context.go(Routers.transactionHistory);
-            break;
-          case 2:
-            context.go(Routers.monthlyLimit);
-            break;
-          case 3:
-            context.go(Routers.statistics);
-            break;
-        }
       },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),

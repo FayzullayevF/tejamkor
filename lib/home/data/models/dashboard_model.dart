@@ -14,10 +14,17 @@ class TejamkorScore {
 
   factory TejamkorScore.fromJson(Map<String, dynamic> json) {
     return TejamkorScore(
-      score: (json['score'] as num?)?.toInt() ?? 0,
+      score: _toInt(json['score']),
       status: json['status'] as String? ?? '',
       message: json['message'] as String? ?? '',
     );
+  }
+
+  static int _toInt(dynamic value) {
+    if (value == null) return 0;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
   }
 }
 
@@ -55,12 +62,12 @@ class DashboardModel {
   factory DashboardModel.fromJson(Map<String, dynamic> json) {
     return DashboardModel(
       greeting: json['greeting'] as String? ?? '',
-      overallBalance: (json['overall_balance'] as num?)?.toDouble() ?? 0.0,
+      overallBalance: _toDouble(json['overall_balance']),
       tejamkorScore: json['tejamkor_score'] != null
           ? TejamkorScore.fromJson(json['tejamkor_score'] as Map<String, dynamic>)
           : TejamkorScore(score: 0, status: '', message: ''),
-      totalIncome: (json['total_income'] as num?)?.toDouble() ?? 0.0,
-      totalExpense: (json['total_expense'] as num?)?.toDouble() ?? 0.0,
+      totalIncome: _toDouble(json['total_income']),
+      totalExpense: _toDouble(json['total_expense']),
       status: json['status'] as String? ?? '',
       accounts: (json['accounts'] as List?)
               ?.map((e) => AccountModel.fromJson(e as Map<String, dynamic>))
@@ -79,5 +86,16 @@ class DashboardModel {
               .toList() ??
           [],
     );
+  }
+
+  static double _toDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      // Replace commas with dots and remove all spaces
+      final normalized = value.replaceAll(',', '.').replaceAll(RegExp(r'\s+'), '');
+      return double.tryParse(normalized) ?? 0.0;
+    }
+    return 0.0;
   }
 }

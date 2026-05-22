@@ -26,21 +26,20 @@ class Header extends StatelessWidget {
           titles[currentPage],
           style: TextStyle(
             color: Colors.black,
-            fontSize: 36,
+            fontSize: 28.sp,
             fontWeight: FontWeight.w700,
-            height: 1,
-            letterSpacing: -1
+            height: 1.2,
+            letterSpacing: -0.5
           ),
         ),
-        SizedBox(height: 16.h),
+        SizedBox(height: 12.h),
         Text(
           subtitle[currentPage],
           style: TextStyle(
             color: Colors.black,
-            fontSize: 16,
+            fontSize: 14.sp,
             fontWeight: FontWeight.w400,
-              height: 1
-
+            height: 1.3
           ),
         ),
         SizedBox(height: 26.h),

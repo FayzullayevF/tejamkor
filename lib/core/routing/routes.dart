@@ -32,8 +32,10 @@ import 'package:tejamkor/home/pages/settings/account_security_view.dart';
 import 'package:tejamkor/home/pages/settings/linked_accounts_view.dart';
 import 'package:tejamkor/home/pages/settings/notification_settings_view.dart';
 import 'package:tejamkor/home/pages/settings/privacy_policy_view.dart';
+import 'package:tejamkor/auth/pages/splash_view.dart';
 
 final router = GoRouter(
+<<<<<<< HEAD
 
   initialLocation: Routers.login,
 
@@ -69,6 +71,13 @@ final router = GoRouter(
       builder: (_, _) => LoginView(),
     ),
 
+=======
+  initialLocation: Routers.splash,
+  routes: [
+    GoRoute(path: Routers.splash, builder: (_, _) => const SplashView()),
+    GoRoute(path: Routers.onboarding, builder: (_, _) => OnboardingView()),
+    GoRoute(path: Routers.login, builder: (_, _) => LoginView()),
+>>>>>>> 82ea7c5 (some changes)
     GoRoute(
       path: Routers.signUp,
       builder: (context, state) => BlocProvider(

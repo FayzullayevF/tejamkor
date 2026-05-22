@@ -231,14 +231,6 @@ class _MonthlyLimitViewState extends State<MonthlyLimitView> {
               ),
             ),
           ),
-          bottomNavigationBar: CustomNavBar(
-            currentIndex: currentIndex,
-            onTap: (index) {
-              setState(() {
-                currentIndex = index;
-              });
-            },
-          ),
         );
       },
     );

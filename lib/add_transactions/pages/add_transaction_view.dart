@@ -56,7 +56,6 @@ class _AddTransactionViewState extends State<AddTransactionView> {
     _fetchCategories();
     context.read<AccountsBloc>().add(FetchAccountsEvent());
     context.read<CurrencyBloc>().add(CurrencyFetched());
-    _loadBalances();
   }
 
   Future<void> _fetchCategories() async {
@@ -85,27 +84,6 @@ class _AddTransactionViewState extends State<AddTransactionView> {
         .where((c) => c.type == _transactionType)
         .toList();
     _selectedIndex = 0;
-  }
-
-  Future<void> _loadBalances() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      for (int i = 0; i < _wallets.length; i++) {
-        final savedBalance = prefs.getDouble(
-          'wallet_balance_${_wallets[i].id}',
-        );
-        if (savedBalance != null) {
-          _wallets[i] = _wallets[i].copyWith(balance: savedBalance);
-        }
-      }
-    });
-  }
-
-  Future<void> _saveBalances() async {
-    final prefs = await SharedPreferences.getInstance();
-    for (var wallet in _wallets) {
-      await prefs.setDouble('wallet_balance_${wallet.id}', wallet.balance);
-    }
   }
 
   String _getWalletIcon(String code) {
@@ -160,33 +138,11 @@ class _AddTransactionViewState extends State<AddTransactionView> {
           BlocListener<TransactionBloc, TransactionState>(
             listener: (context, state) {
               if (state is TransactionSubmitSuccess) {
-                setState(() {
-                  final walletIdx = _wallets.indexWhere(
-                    (w) => w.id == _selectedAccount,
-                  );
-                  if (walletIdx != -1) {
-                    double newBalance;
-                    if (_transactionType == 'income') {
-                      newBalance = _wallets[walletIdx].balance + _amount;
-                    } else {
-                      newBalance = _wallets[walletIdx].balance - _amount;
-                    }
-                    _wallets[walletIdx] = _wallets[walletIdx].copyWith(
-                      balance: newBalance,
-                    );
-                    _saveBalances();
-                  }
-                  _amount = 0.0;
-                });
                 AppSnackbar.showSuccess(
                   context,
                   'Tranzaksiya muvaffaqiyatli qo\'shildi!',
                 );
-                context.read<TransactionBloc>().add(
-                  ResetTransactionStateEvent(),
-                );
-
-                context.go(Routers.transactionHistory);
+                context.pop();
               } else if (state is TransactionError) {
                 AppSnackbar.showError(context, 'Xatolik: ${state.message}');
               }
@@ -210,7 +166,6 @@ class _AddTransactionViewState extends State<AddTransactionView> {
                       !_wallets.any((w) => w.id == _selectedAccount)) {
                     _selectedAccount = _wallets.first.id;
                   }
-                  _loadBalances();
                 });
               }
             },

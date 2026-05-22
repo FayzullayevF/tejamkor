@@ -39,7 +39,13 @@ class AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
 
-    if (err.response?.statusCode == 401) {
+    final responseData = err.response?.data;
+    final isTokenExpired = err.response?.statusCode == 401 ||
+        (err.response?.statusCode == 403 &&
+            responseData is Map &&
+            responseData['code'] == 'token_not_valid');
+
+    if (isTokenExpired) {
 
       final ctx = navigatorKey.currentContext;
 

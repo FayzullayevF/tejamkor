@@ -15,8 +15,14 @@ import 'package:tejamkor/home/data/models/dashboard_model.dart';
 import 'package:tejamkor/categories/data/models/currency_model.dart';
 
 class ApiClient {
-  final Dio dio = Dio(BaseOptions(baseUrl: "https://www.tejamkor-ai.uz"))
-    ..interceptors.add(AuthInterceptor());
+  final Dio dio = Dio(
+    BaseOptions(
+      baseUrl: "https://www.tejamkor-ai.uz",
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 15),
+      sendTimeout: const Duration(seconds: 15),
+    ),
+  )..interceptors.add(AuthInterceptor());
 
 
   static const String _registerPath = '/api/users/register/';

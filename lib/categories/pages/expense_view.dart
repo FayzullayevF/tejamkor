@@ -62,7 +62,7 @@ class ExpenseView extends StatelessWidget {
             crossAxisCount: 3,
             mainAxisSpacing: 16.h,
             crossAxisSpacing: 16.w,
-            childAspectRatio: 1,
+            childAspectRatio: 1.1,
           ),
           itemCount: expenses.length,
           itemBuilder: (context, index) {

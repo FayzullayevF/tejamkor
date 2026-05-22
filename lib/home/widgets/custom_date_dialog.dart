@@ -103,7 +103,15 @@ class _CustomDateDialogState extends State<CustomDateDialog> {
                 lastDate: DateTime(2100),
                 onDateChanged: (date) {
                   setState(() {
-                    _selectedDate = date;
+                    // Preserve the original time when changing the date
+                    _selectedDate = DateTime(
+                      date.year,
+                      date.month,
+                      date.day,
+                      widget.initialDate.hour,
+                      widget.initialDate.minute,
+                      widget.initialDate.second,
+                    );
                   });
                 },
               ),

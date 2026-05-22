@@ -178,14 +178,6 @@ class _StatisticsViewState extends State<StatisticsView> {
           return const SizedBox.shrink();
         },
       ),
-      bottomNavigationBar: CustomNavBar(
-        currentIndex: currentIndex,
-        onTap: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-      ),
     );
   }
 

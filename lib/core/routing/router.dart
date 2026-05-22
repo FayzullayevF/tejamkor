@@ -1,7 +1,8 @@
 class Routers {
+  static const splash = "/splash";
   static const onboarding = "/onboarding";
   static const login = "/login";
-  static const signUp = "/onboarding";
+  static const signUp = "/signUp";
   static const home = "/";
   static const incorrectPassword = "/incorrectPassword";
   static const forgotPassword = "/forgotPassword";

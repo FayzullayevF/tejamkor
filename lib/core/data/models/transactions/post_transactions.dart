@@ -88,7 +88,9 @@ class TransactionModel {
     return TransactionModel(
       id: json['id'] as int?,
       type: json['type']?.toString() ?? 'expense',
-      amount: json['amount']?.toString() ?? '0',
+      amount: (json['amount']?.toString() ?? '0')
+          .replaceAll(RegExp(r'\s+'), '')
+          .replaceAll(',', '.'),
       note: json['note']?.toString() ?? '',
       categoryId: category['id'] as int? ?? 0,
       categoryName: category['name']?.toString() ?? '',
